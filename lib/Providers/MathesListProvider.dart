@@ -13,6 +13,28 @@ class MatchesListProvider extends ChangeNotifier
 
   String? errorMsg;
 
+
+  double _calculatePercentage(Scholarship scholarship)
+  {
+    double baseScorepercentage = 50.0;
+
+    // Additional scoring based on criteria
+    baseScorepercentage += (_userProfile.cgpa - scholarship.minCGPA) / (4.0 - scholarship.minCGPA)* 25;
+
+    baseScorepercentage += (_userProfile.ieltsScore - scholarship.minIelts) / (9.0 - scholarship.minIelts) * 15; 
+
+
+    baseScorepercentage += 15; // Field of study match bonus
+
+    
+    if(baseScorepercentage > 100.0) {
+      baseScorepercentage = 100.0;
+    } 
+
+    return baseScorepercentage;
+
+  }
+
   void _initState() async
   {
     status = Status.loading;
@@ -22,6 +44,14 @@ class MatchesListProvider extends ChangeNotifier
     try
     {
         matches = await _scholarshipRepo.fetchScholarships(_userProfile);
+
+        for (var scholarship in matches) {
+          scholarship.percentageScore = _calculatePercentage(scholarship);
+        }
+
+        matches.sort((a,b)=> b.percentageScore!.compareTo(a.percentageScore!));
+
+
         status = Status.completed;
         notifyListeners();
 

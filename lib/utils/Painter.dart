@@ -14,7 +14,7 @@ class CircleProgressPainter extends CustomPainter {
     final backgroundPaint = Paint()
       ..color = Colors.grey.shade300
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 5;
+      ..strokeWidth = 10;
 
     final foregroundPaint = Paint()
       ..color = const Color.fromARGB(255, 16, 73, 231)

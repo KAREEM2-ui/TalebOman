@@ -25,11 +25,15 @@ class _MatchState extends State<Match> {
   return InkWell(
     onTap: () => setState(() => isTaped = !isTaped),
     borderRadius: BorderRadius.circular(16),
+    highlightColor:  const Color.fromARGB(255, 113, 185, 244),
+
     child: Card(
+      borderOnForeground: true,
       elevation: 5,
-      shadowColor: Colors.black26,
+      shadowColor: const Color.fromARGB(66, 11, 25, 105),
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       shape: RoundedRectangleBorder(
+        side: BorderSide(color: const Color.fromARGB(255, 113, 185, 244), width: 3,style: isTaped ? BorderStyle.solid : BorderStyle.none ),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Padding(
@@ -82,12 +86,13 @@ class _MatchState extends State<Match> {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       SizedBox(
-                        width: 65,
-                        height: 65,
+                        width: 90,
+                        height: 90,
                         child: CustomPaint(
-                          painter: CircleProgressPainter(percentage: 70),
+                          size: const Size(90, 90),
+                          painter: CircleProgressPainter(percentage: widget.match.percentageScore!),
                           child: Center(
-                            child: Text("70 %"),
+                            child: Text("${widget.match.percentageScore!.toStringAsFixed(1)} %"),
                           ),
                         ),
                       ),
@@ -114,12 +119,12 @@ class _MatchState extends State<Match> {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.location_on, size: 16, color: theme.colorScheme.onSurface.withOpacity(0.6)),
+                    Icon(Icons.location_on, size: 16, color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
                     const SizedBox(width: 4),
                     Text(
                       widget.match.country,
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurface.withOpacity(0.6),
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                     ),
                   ],
@@ -127,12 +132,12 @@ class _MatchState extends State<Match> {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.date_range, size: 16, color: theme.colorScheme.onSurface.withOpacity(0.6)),
+                    Icon(Icons.date_range, size: 16, color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
                     const SizedBox(width: 4),
                     Text(
                       "$daysLeft Days Left",
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurface.withOpacity(0.6),
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                     ),
                   ],
@@ -145,7 +150,9 @@ class _MatchState extends State<Match> {
             AnimatedCrossFade(
               firstChild: Padding(
                 padding: const EdgeInsets.only(top: 10.0),
-                child: Center(child: const Text("Tap to view more details",textAlign: TextAlign.center,)),
+                child: Center(child: Text("Tap to view more details",textAlign: TextAlign.center,style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                ),)),
               ),
               secondChild: _buildMatchDetails(context, widget.match),
               crossFadeState: isTaped ? CrossFadeState.showSecond : CrossFadeState.showFirst,
@@ -175,10 +182,10 @@ Widget _buildMatchDetails(BuildContext context, Scholarship match) {
                   label: Text(
                     field,
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurface.withOpacity(0.7),
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                     ),
                   ),
-                  backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+                  backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.1),
                 );
               }).toList(),
             ),
@@ -198,12 +205,12 @@ Widget _buildMatchDetails(BuildContext context, Scholarship match) {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.school, size: 16, color: theme.colorScheme.onSurface.withOpacity(0.6)),
+                    Icon(Icons.school, size: 16, color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
                     const SizedBox(width: 4),
                     Text(
                       "CGPA ≥ ${match.minCGPA}",
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurface.withOpacity(0.6),
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                     ),
                   ],
@@ -211,12 +218,12 @@ Widget _buildMatchDetails(BuildContext context, Scholarship match) {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.language, size: 16, color: theme.colorScheme.onSurface.withOpacity(0.6)),
+                    Icon(Icons.language, size: 16, color: theme.colorScheme.onSurface),
                     const SizedBox(width: 4),
                     Text(
                       "IELTS ≥ ${match.minIelts}",
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurface.withOpacity(0.6),
+                        color: theme.colorScheme.onSurface,
                       ),
                     ),
                   ],
@@ -229,12 +236,12 @@ Widget _buildMatchDetails(BuildContext context, Scholarship match) {
             // ───── DEADLINE ─────
             Row(
               children: [
-                Icon(Icons.calendar_today, size: 16, color: theme.colorScheme.onSurface.withOpacity(0.6)),
+                Icon(Icons.calendar_today, size: 16, color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
                 const SizedBox(width: 4),
                 Text(
                   "Deadline: ${match.deadline.day}/${match.deadline.month}/${match.deadline.year}",
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurface.withOpacity(0.6),
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
                 ),
               ],

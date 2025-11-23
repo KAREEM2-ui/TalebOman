@@ -11,6 +11,7 @@ class Scholarship {
   final double minIelts;
   final DateTime deadline;
   final List<String> fieldsOfStudy;
+  double? percentageScore;
 
 
   Scholarship({
