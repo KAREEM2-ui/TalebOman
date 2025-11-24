@@ -33,7 +33,7 @@ class MatchesPage extends StatelessWidget {
       _buildUsernotRegistered(context)
     else
       ChangeNotifierProvider(
-        create: (_) => MatchesListProvider(userProfileProvider.userProfile!),
+        create: (_) => MatchesListProvider(userProfileProvider.userProfile!,userProfileProvider.didUpdated),
         child: const MatchedList(),
       ),
   ],

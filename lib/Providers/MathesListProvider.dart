@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:projectapp/FirestoreCache/cache.dart';
 import 'package:projectapp/Models/UserProfile.dart';
 import '../utils/Enums/Status.dart';
 import '../Models/Scholarship.dart';
@@ -8,7 +9,7 @@ class MatchesListProvider extends ChangeNotifier
 {
   late Userprofile _userProfile;
   late ScholarshipRepo _scholarshipRepo;
-  List<Scholarship> matches = [];
+  List<Scholarship>? matches;
   Status status = Status.initial;
 
   String? errorMsg;
@@ -35,21 +36,37 @@ class MatchesListProvider extends ChangeNotifier
 
   }
 
-  void _initState() async
+  Future<void> loadScholarships([bool ignoreCache = false]) async
   {
     status = Status.loading;
     notifyListeners();
 
+    
 
     try
     {
-        matches = await _scholarshipRepo.fetchScholarships(_userProfile);
+       // Load from cache first, if allowed 
+       if(!ignoreCache)
+       {
+          matches = await FirestoreCache.getScholarshipsMatchedList();
+       }
+       
+        // if not in cache, load from firestore
+        matches ??= await _scholarshipRepo.fetchScholarships(_userProfile);
 
-        for (var scholarship in matches) {
-          scholarship.percentageScore = _calculatePercentage(scholarship);
-        }
+         // Save to cache
+          await FirestoreCache.updateScholarshipsMatchedList(matches!);
 
-        matches.sort((a,b)=> b.percentageScore!.compareTo(a.percentageScore!));
+
+
+          if(matches!.isNotEmpty)
+          {
+              for (var scholarship in matches!) {
+                scholarship.percentageScore = _calculatePercentage(scholarship);
+              }
+
+              matches!.sort((a,b)=> b.percentageScore!.compareTo(a.percentageScore!));
+          }       
 
 
         status = Status.completed;
@@ -70,12 +87,15 @@ class MatchesListProvider extends ChangeNotifier
 
 
 
-  MatchesListProvider(Userprofile userProfile)
+
+
+  MatchesListProvider(Userprofile userProfile,bool didProfileUpdate)
   {
     _userProfile = userProfile;
     _scholarshipRepo = ScholarshipRepo();
     
-    _initState();
+    // if profile was updated, ignore cache
+    loadScholarships(didProfileUpdate);
 
   }
 

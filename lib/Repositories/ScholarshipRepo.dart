@@ -40,7 +40,7 @@ Future<List<Scholarship>> fetchScholarships(Userprofile userProfile) async {
   
   // Map to Scholarship objects
   return querySnapshot.docs.map((doc) {
-    return Scholarship.fromMap(doc.data() as Map<String, dynamic>);
+    return Scholarship.fromMap(doc.data() as Map<String, dynamic>, doc.id);
   }).toList();
 }
 

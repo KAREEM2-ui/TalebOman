@@ -14,19 +14,21 @@ class AuthenticationProvider extends ChangeNotifier
   Status registrationStatus = Status.initial;
   String? errorMessage;
 
-  bool get isLoggedIn => _userDetails != null;
+  bool get isLoggedIn  => _authRepo.isAthenticated;
 
   UserDetails? get userDetails => _userDetails;
 
   AuthenticationProvider()
   {
+     loginStatus = Status.loading;
+
     _authRepo.authStateChanges.listen((User? user) async{
       
 
 
       if (user != null) {
     
-        // loading user details from firestore
+        // loading user details from firestore  
         _userDetails = await _authRepo.getUserDetails(user.uid);
         await Future.delayed(const Duration(seconds: 2));
 

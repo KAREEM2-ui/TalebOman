@@ -20,7 +20,7 @@ class MatchedList extends StatelessWidget {
       return Padding(
           padding : const EdgeInsets.fromLTRB(8, 12, 8, 12),
           child: Column(
-
+      
             children: [
               
               // header
@@ -45,19 +45,19 @@ class MatchedList extends StatelessWidget {
                 ),
               ],
               ),
-
+      
          
-
-
+      
+      
               // State
               matchesListProvider.status == Status.loading ? _buildLoadingState(context) : 
               matchesListProvider.status == Status.error ? _buildErrorState(context) :
-              matchesListProvider.matches.isEmpty ? _buildEmptyState(context) :
-
-              _buildMatchesList(context, matchesListProvider.matches),
+              matchesListProvider.matches!.isEmpty ? _buildEmptyState(context) :
+      
+              _buildMatchesList(context, matchesListProvider.matches!, matchesListProvider),
             ]
         )
-
+      
       );
     }
   }
@@ -143,7 +143,7 @@ Widget _buildLoadingState(BuildContext context) {
           ),
           const SizedBox(height: 16),
           Text(
-            '${Provider.of<MatchesListProvider>(context).matches.length} Error loading matches (${Provider.of<MatchesListProvider>(context).errorMsg})',
+            ' Error loading matches (${Provider.of<MatchesListProvider>(context).errorMsg})',
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
               color: Theme.of(context).colorScheme.error,
             ),
@@ -191,12 +191,16 @@ Widget _buildLoadingState(BuildContext context) {
   }
 
   // MATCHES LIST
-  Widget _buildMatchesList(BuildContext context, List<Scholarship> matches) {
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(), // allow outer SingleChildScrollView to handle scrolling
-      itemCount: matches.length,
-      itemBuilder: (context, index) => Match(match: matches[index]),
+  Widget _buildMatchesList(BuildContext context, List<Scholarship> matches,MatchesListProvider matchesListProvider) {
+    return RefreshIndicator(
+      displacement: 80,
+      onRefresh: () async {await Future.delayed(Duration(seconds: 3));await matchesListProvider.loadScholarships(true);},
+      child: ListView.builder(
+        shrinkWrap: true,
+        physics: const AlwaysScrollableScrollPhysics(), 
+        itemCount: matches.length,
+        itemBuilder: (context, index) => Match(match: matches[index]),
+      ),
     );
   }
 

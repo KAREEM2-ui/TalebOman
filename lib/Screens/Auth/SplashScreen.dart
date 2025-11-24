@@ -27,22 +27,25 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
 
-  void applyNavigation()
+  void applyNavigation(BuildContext context)
   {
-    Timer.periodic(Duration(seconds: 3),
-    (timer){
-      timer.cancel();
-
-      if(authProvider.isLoggedIn) {
-          directUserBasedOnRole(context);
-        }
-
-      else
-       {
-          Navigator.pushReplacement(context,MaterialPageRoute(builder : (context)=> const AuthScreen()));
-       }
-    });
     
+    Timer(const Duration(milliseconds: 2000), () {
+     
+      if(authProvider.isLoggedIn)
+      {
+        // navigate to user specific screen
+        directUserBasedOnRole(context);
+      }
+      else
+      {
+        // navigate to auth screen
+        Navigator.pushReplacement(context, MaterialPageRoute(
+          builder: (context) => const AuthScreen(),
+        ));
+      }
+
+    });
   }
 
   @override
@@ -52,7 +55,7 @@ class _SplashScreenState extends State<SplashScreen> {
     // if loaded , start navigating
     if(authProvider.loginStatus != Status.loading)
       {
-        applyNavigation();
+        applyNavigation(context);
       }
 
 

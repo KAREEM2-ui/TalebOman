@@ -27,17 +27,19 @@ class Scholarship {
     required this.fieldsOfStudy,
   });
 
-  factory Scholarship.fromMap(Map<String, dynamic> map) {
+  factory Scholarship.fromMap(Map<String, dynamic> map,String id) {
     return Scholarship(
-      id: map['id'] as String?,
-      Title: map['title'] as String,
+      id: id,
+      Title: map['Title'] as String,
       university: map['university'] as String,
       country: map['country'] as String,
       type: map['type'] as String,
       coverage: List<String>.from(map['coverage'] as List<dynamic>),
       minCGPA: map['minCgpa'] as double,
       minIelts: map['minIelts'] as double,
-      deadline: (map['deadline'] as Timestamp).toDate(),
+
+      // Handle both Timestamp (firestore) and string formats (in memory cache)
+      deadline: map['deadline'] is Timestamp ? (map['deadline'] as Timestamp).toDate() : DateTime.parse(map['deadline'] as String),
       fieldsOfStudy: List<String>.from(map['fieldsOfStudy'] as List<dynamic>),
     );
   }

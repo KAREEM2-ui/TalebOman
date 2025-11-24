@@ -10,6 +10,7 @@ class UserProfileProvider extends ChangeNotifier
   Userprofile? get userProfile => _userProfile;
   Status status = Status.initial;
   late String uid;
+  bool didUpdated = false;
 
 
   Future<void> updateUserProfile(Userprofile userProfile) async {
