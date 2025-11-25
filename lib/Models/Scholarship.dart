@@ -30,7 +30,7 @@ class Scholarship {
   factory Scholarship.fromMap(Map<String, dynamic> map,String id) {
     return Scholarship(
       id: id,
-      Title: map['Title'] as String,
+      Title: map['title'] as String,
       university: map['university'] as String,
       country: map['country'] as String,
       type: map['type'] as String,
@@ -48,7 +48,7 @@ class Scholarship {
 
   Map<String, dynamic> toMap() {
     return {
-      'Title': Title,
+      'title': Title,
       'minIelts': minIelts,
       'deadline': Timestamp.fromDate(deadline),
       'university': university,

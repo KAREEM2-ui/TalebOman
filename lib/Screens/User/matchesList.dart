@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:projectapp/Models/Scholarship.dart';
 import 'package:projectapp/Providers/MathesListProvider.dart';
 import 'package:projectapp/Providers/ThemeProvider.dart';
+import 'package:projectapp/Screens/User/Printing/MatchesPrint.dart';
 import 'package:projectapp/Screens/User/Widgets/MatchWidget.dart';
 import 'package:provider/provider.dart';
 import '../../utils/Enums/Status.dart';
@@ -36,11 +37,15 @@ class MatchedList extends StatelessWidget {
                   onPressed: () {
                     // Navigate to see all matches
                   },
-                  child: Text(
-                    'See Other Scholarships',
-                    style: Theme.of(context).textTheme.headlineMedium!,
-                    
-                    
+                  child: ElevatedButton.icon(
+                    style: Theme.of(context).elevatedButtonTheme.style,
+                    iconAlignment: IconAlignment.end,
+                    icon: const Icon(Icons.print),
+                    label: const Text('Print'),
+                    onPressed: () async {
+                      await MatchesPrint.generatePDF(matchesListProvider.matches!);
+                      
+                    },
                   ),
                 ),
               ],
