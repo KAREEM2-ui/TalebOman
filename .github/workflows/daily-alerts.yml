@@ -1,10 +1,10 @@
  name: Firebase Daily Alerts
 # 1️⃣ When to run the workflow
-on:
+ on:
   schedule:
     - cron: '0 0 * * *' # runs every day at midnight UTC
   workflow_dispatch: # allows manual trigger from GitHub UI
-jobs:
+ jobs:
   run-alerts:
     runs-on: ubuntu-latest
     steps:
