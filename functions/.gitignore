@@ -1,0 +1,17 @@
+# Node modules
+node_modules/
+
+# Local env files
+*.local
+.env
+
+# Firebase local config
+.firebaserc
+
+# Firebase admin service account
+privatekey.json
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
