@@ -28,4 +28,4 @@ jobs:
       - name: Run Daily Alerts
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-        run: node alerts.js
+        run: node .github/functions/alerts.js
