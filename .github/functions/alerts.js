@@ -1,6 +1,4 @@
 const admin = require("firebase-admin");
-const { cert } = require("firebase-admin/app");
-const { error } = require("firebase-functions/logger");
 
 require('dotenv').config();
 const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
@@ -13,7 +11,6 @@ admin.initializeApp(
 const db = admin.firestore();
 
 
-exports.myCronJob = functions.pubsub.schedule("every 24 hours").onRun(job);
 
 
 async function runAlertCheck() {
@@ -21,6 +18,9 @@ async function runAlertCheck() {
   userData.forEach(async (userDoc) => {
     console.log(`Processing user: ${userDoc.id}`);
   });
+
+
+  await db.collection("Alerts logs").add({runAt: new Date(), status: "completed"})
 };
 
 
