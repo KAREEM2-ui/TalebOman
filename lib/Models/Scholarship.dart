@@ -35,8 +35,8 @@ class Scholarship {
       country: map['country'] as String,
       type: map['type'] as String,
       coverage: List<String>.from(map['coverage'] as List<dynamic>),
-      minCGPA: map['minCgpa'] as double,
-      minIelts: map['minIelts'] as double,
+      minCGPA: (map['minCgpa'] as num).toDouble(),
+      minIelts: (map['minIelts'] as num).toDouble(),
 
       // Handle both Timestamp (firestore) and string formats (in memory cache)
       deadline: map['deadline'] is Timestamp ? (map['deadline'] as Timestamp).toDate() : DateTime.parse(map['deadline'] as String),

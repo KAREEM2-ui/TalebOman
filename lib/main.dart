@@ -11,7 +11,7 @@ void main(List<String> args) async {
 
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  NotoficationService notificationService = NotoficationService();
+  NotificationService notificationService = NotificationService();
   await notificationService.initialize();
   
   runApp(

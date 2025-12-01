@@ -51,9 +51,12 @@ class MatchesListProvider extends ChangeNotifier
           matches = await FirestoreCache.getScholarshipsMatchedList();
        }
        
-        // if not in cache, load from firestore
-        matches ??= await _scholarshipRepo.fetchScholarships(_userProfile);
-
+        // if not in cache, or requested to refresh , load from firestore
+        if(matches == null || ignoreCache)
+        {   
+          matches = await _scholarshipRepo.fetchScholarships(_userProfile);
+        }
+         
          // Save to cache
           await FirestoreCache.updateScholarshipsMatchedList(matches!);
 
