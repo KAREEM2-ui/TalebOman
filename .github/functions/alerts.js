@@ -90,11 +90,16 @@ async function runAlertCheck() {
 
 
     // commit batch
-    await AlertBatch.commit();
+    if(alertsCreatedCount > 0)
+    {
+      await AlertBatch.commit();
+      
+      // Send FCM notifications to users
+  
+      const messaging = admin.messaging();
+      await messaging.sendEach(userMessages);
+    }
 
-    // Send FCM notifications to users
-    const messaging = admin.messaging();
-    await messaging.sendEach(userMessages);
 
 
   await db.collection("Alerts logs").add({runAt: new Date(), status: `completed Alert Check - {Already Created Alerts: ${alertsCreatedCount}}`});
