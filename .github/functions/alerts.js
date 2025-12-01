@@ -76,7 +76,10 @@ async function runAlertCheck() {
             token: userFcmToken,
             notification: {
               title: 'New Scholarship Alert',
-              body: `Scholarship: ${scholarship["title"]} at ${scholarship["university"]} in ${scholarship["country"]} is closing in ${Math.ceil((scholarship["deadline"].toDate() - today) / (1000 * 60 * 60 * 24))} days. Apply now!`
+              body: `Scholarship: ${scholarship["title"]} at ${scholarship["university"]} in ${scholarship["country"]} is closing in ${Math.ceil((scholarship["deadline"].toDate() - today) / (1000 * 60 * 60 * 24))} days. Apply now!`,
+              priority: 'high',
+              "vibrate": [300, 500, 300]  
+
             }
           })
         }

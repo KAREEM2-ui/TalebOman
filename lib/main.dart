@@ -1,4 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'utils/Thems/Theme.dart';
 import 'package:provider/provider.dart';
@@ -9,8 +10,10 @@ import 'Screens/User/Notifications/notificationService.dart';
 
 void main(List<String> args) async {
 
+
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+
   NotificationService notificationService = NotificationService();
   await notificationService.initialize();
   

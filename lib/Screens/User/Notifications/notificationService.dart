@@ -4,7 +4,12 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 class NotificationService {
   // Make it singleton (optional but recommended)
   static final NotificationService instance = NotificationService._internal();
+
+  
+  // public factory constructor
   factory NotificationService() => instance;
+
+  // Private constructor
   NotificationService._internal();
 
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
@@ -77,6 +82,16 @@ class NotificationService {
       _showForegroundNotification(message);
     });
 
+
+    // background message handler
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+   
+
+    // background message handler
+    FirebaseMessaging.onBackgroundMessage((RemoteMessage message) async {
+      _showForegroundNotification(message);
+    });
+
     // 5. When user taps notification and app opens from background/terminated
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       _handleMessageNavigation(message.data['route'] ?? '/');
@@ -129,6 +144,46 @@ class NotificationService {
       payload: message.data['route'] ?? '/', // pass route or any data
     );
   }
+   
+  @pragma('vm:entry-point')    
+  static Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+      
+      // 2. Re-create the notification channel (in case it was cleared)
+      const AndroidNotificationChannel channel = AndroidNotificationChannel(
+        'high_importance_channel',
+        'High Importance Notifications',
+        description: 'Used for important scholarship alerts',
+        importance: Importance.max,
+      );
+
+      final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+          FlutterLocalNotificationsPlugin();
+
+      await flutterLocalNotificationsPlugin
+          .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+          ?.createNotificationChannel(channel);
+
+      // 3. Show the notification using the exact same look as foreground
+      final notification = message.notification;
+      if (notification != null) {
+        await flutterLocalNotificationsPlugin.show(
+          notification.hashCode,
+          notification.title,
+          notification.body,
+          const NotificationDetails(
+            android: AndroidNotificationDetails(
+              'high_importance_channel',
+              'High Importance Notifications',
+              channelDescription: 'Used for important scholarship alerts',
+              importance: Importance.max,
+              priority: Priority.high,
+              icon: '@mipmap/ic_launcher',
+            ),
+          ),
+          payload: message.data['route'],
+        );
+      }
+    }
 
   void _handleMessageNavigation(String route) {
     // Use Navigator, GoRouter, AutoRoute, etc. here

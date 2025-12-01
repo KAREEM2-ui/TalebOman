@@ -20,7 +20,10 @@ class _MatchState extends State<Match> {
    
   final theme = Theme.of(context);
   final deadlineRemaining = widget.match.deadline.difference(DateTime.now());
-  final daysLeft = deadlineRemaining.inDays > 0 ? deadlineRemaining.inDays : 0;
+
+  final daysLeft = deadlineRemaining.isNegative
+    ? 0
+    : (deadlineRemaining.inSeconds / Duration.secondsPerDay).ceil();
 
   return InkWell(
     onTap: () => setState(() => isTaped = !isTaped),
