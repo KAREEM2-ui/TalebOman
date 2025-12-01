@@ -25,7 +25,8 @@ async function runAlertCheck() {
 
 
 
-runAlertCheck().catch(error((err) => {
-  console.error("Error running alert check:", err);
-}));
+runAlertCheck().catch((error)=>
+{
+    console.error("Error running alert check:", error);
+});
 
