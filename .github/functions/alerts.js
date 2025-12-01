@@ -1,5 +1,4 @@
 const admin = require("firebase-admin");
-const { or, where } = require("firebase-admin/firestore");
 
 require('dotenv').config({path: '.github/.env'});
 const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
@@ -44,14 +43,17 @@ async function runAlertCheck() {
 
     let AlertBatch = db.batch();
     let alertsCreatedCount = 0;
+    let userMessages = []; // To store messages for each user with their FCM token
 
 
     // for each profile, check for matched scholarships and create alerts
     for (let profile of profiles) 
     {
       let matchedScholarships = getMatchedScholarships(profile, Scholarships);
+      let userFcmToken = await db.collection("UsersDetails").doc(profile["id"]).get().then(doc => (doc.data())["token"]);
 
-      matchedScholarships.forEach((scholarship) => {
+      // add alert to batch
+      matchedScholarships.forEach(async (scholarship) => {
         const alertRef = db.collection("Alerts").doc(profile["id"]).collection("UserAlerts").doc();
 
         AlertBatch.set(alertRef, {
@@ -65,6 +67,20 @@ async function runAlertCheck() {
         });
 
         alertsCreatedCount += 1;
+
+
+        // Prepare user message with User FCM token
+        if(userFcmToken != null)
+        {
+          userMessages.push({
+            token: userFcmToken,
+            notification: {
+              title: 'New Scholarship Alert',
+              body: `Scholarship: ${scholarship["title"]} at ${scholarship["university"]} in ${scholarship["country"]} is closing in ${Math.ceil((scholarship["deadline"].toDate() - today) / (1000 * 60 * 60 * 24))} days. Apply now!`
+            }
+          })
+        }
+
       });
 
     }
@@ -76,6 +92,9 @@ async function runAlertCheck() {
     // commit batch
     await AlertBatch.commit();
 
+    // Send FCM notifications to users
+    const messaging = admin.messaging();
+    await messaging.sendEach(userMessages);
 
 
   await db.collection("Alerts logs").add({runAt: new Date(), status: `completed Alert Check - {Already Created Alerts: ${alertsCreatedCount}}`});
