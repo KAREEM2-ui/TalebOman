@@ -12,38 +12,30 @@ class Match extends StatefulWidget {
 }
 
 class _MatchState extends State<Match> {
-
-  bool isTaped = false;
-
   @override
   Widget build(BuildContext context) {
-   
-  final theme = Theme.of(context);
-  final deadlineRemaining = widget.match.deadline.difference(DateTime.now());
+    final theme = Theme.of(context);
+    final deadlineRemaining = widget.match.deadline.difference(DateTime.now());
 
-  final daysLeft = deadlineRemaining.isNegative
-    ? 0
-    : (deadlineRemaining.inSeconds / Duration.secondsPerDay).ceil();
+    final daysLeft = deadlineRemaining.isNegative
+        ? 0
+        : (deadlineRemaining.inSeconds / Duration.secondsPerDay).ceil();
 
-  return InkWell(
-    onTap: () => setState(() => isTaped = !isTaped),
-    borderRadius: BorderRadius.circular(16),
-    highlightColor:  const Color.fromARGB(255, 113, 185, 244),
-
-    child: Card(
-      borderOnForeground: true,
-      elevation: 5,
-      shadowColor: const Color.fromARGB(66, 11, 25, 105),
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      shape: RoundedRectangleBorder(
-        side: BorderSide(color: const Color.fromARGB(255, 113, 185, 244), width: 3,style: isTaped ? BorderStyle.solid : BorderStyle.none ),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+    return InkWell(
+      onTap: () => _showDetailsDialog(context, widget.match),
+      borderRadius: BorderRadius.circular(16),
+      highlightColor: const Color.fromARGB(255, 113, 185, 244),
+      child: Card(
+        borderOnForeground: true,
+        elevation: 5,
+        shadowColor: const Color.fromARGB(66, 11, 25, 105),
+        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             // ───── TOP ROW: Title + University + Progress ─────
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -150,110 +142,128 @@ class _MatchState extends State<Match> {
 
             const SizedBox(height: 12),
 
-            AnimatedCrossFade(
-              firstChild: Padding(
-                padding: const EdgeInsets.only(top: 10.0),
-                child: Center(child: Text("Tap to view more details",textAlign: TextAlign.center,style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
-                ),)),
+            // hint
+            Padding(
+              padding: const EdgeInsets.only(top: 10.0),
+              child: Center(
+                child: Text(
+                  "Tap to view more details",
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                  ),
+                ),
               ),
-              secondChild: _buildMatchDetails(context, widget.match),
-              crossFadeState: isTaped ? CrossFadeState.showSecond : CrossFadeState.showFirst,
-              duration: const Duration(milliseconds: 100),
-            )
-            
-        ]),
+            ),
+          ]),
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 
+  void _showDetailsDialog(BuildContext context, Scholarship match) {
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        final maxHeight = MediaQuery.of(ctx).size.height * 0.75;
+        return AlertDialog(
+          contentPadding: const EdgeInsets.fromLTRB(18, 18, 18, 0),
+          content: ConstrainedBox(
+            constraints: BoxConstraints(maxHeight: maxHeight, maxWidth: 520),
+            child: SingleChildScrollView(
+              child: _buildMatchDetails(ctx, match),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('Close'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
 
 Widget _buildMatchDetails(BuildContext context, Scholarship match) {
   final theme = Theme.of(context);
 
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      
-      
-         Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              children: widget.match.fieldsOfStudy.map((field) {
-                return Chip(
-                  label: Text(
-                    field,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
-                    ),
-                  ),
-                  backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.1),
-                );
-              }).toList(),
+  return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+    Wrap(
+      spacing: 6,
+      runSpacing: 6,
+      children: (match.fieldsOfStudy ?? <String>[]).map((field) {
+        return Chip(
+          label: Text(
+            field,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
             ),
+          ),
+          backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.1),
+        );
+      }).toList(),
+    ),
 
-            const SizedBox(height: 16),
+    const SizedBox(height: 16),
 
-            // ───── REQUIREMENTS ─────
+    // ───── REQUIREMENTS ─────
+    Text(
+      "Requirements:",
+      style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+    ),
+    const SizedBox(height: 8),
+    Wrap(
+      spacing: 16,
+      runSpacing: 4,
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.school, size: 16, color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
+            const SizedBox(width: 4),
             Text(
-              "Requirements:",
-              style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+              "CGPA ≥ ${match.minCGPA}",
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+              ),
             ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 16,
-              runSpacing: 4,
-              children: [
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.school, size: 16, color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
-                    const SizedBox(width: 4),
-                    Text(
-                      "CGPA ≥ ${match.minCGPA}",
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                      ),
-                    ),
-                  ],
-                ),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.language, size: 16, color: theme.colorScheme.onSurface),
-                    const SizedBox(width: 4),
-                    Text(
-                      "IELTS ≥ ${match.minIelts}",
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurface,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+          ],
+        ),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.language, size: 16, color: theme.colorScheme.onSurface),
+            const SizedBox(width: 4),
+            Text(
+              "IELTS ≥ ${match.minIelts}",
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurface,
+              ),
             ),
+          ],
+        ),
+      ],
+    ),
 
-            const SizedBox(height: 16),
+    const SizedBox(height: 16),
 
-            // ───── DEADLINE ─────
-            Row(
-              children: [
-                Icon(Icons.calendar_today, size: 16, color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
-                const SizedBox(width: 4),
-                Text(
-                  "Deadline: ${match.deadline.day}/${match.deadline.month}/${match.deadline.year}",
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                  ),
-                ),
-              ],
-            ),
-          
-      
-    ]
-  );
-}
+    // ───── DEADLINE ─────
+    Row(
+      children: [
+        Icon(Icons.calendar_today, size: 16, color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
+        const SizedBox(width: 4),
+        Text(
+          "Deadline: ${match.deadline.day}/${match.deadline.month}/${match.deadline.year}",
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+          ),
+        ),
+      ],
+    ),
+    const SizedBox(height: 12),
+  ]);
 }
 
 

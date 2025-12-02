@@ -200,8 +200,10 @@ class _userHomeScreenState extends State<userHomeScreen> {
             ),
           ],
         ),
-      
+        extendBody: true,
+        resizeToAvoidBottomInset: true,
         body: SafeArea(
+          bottom: false,
           child: IndexedStack(
                 index: Navigator.currentPageIdx,
                 children: const [

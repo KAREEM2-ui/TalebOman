@@ -55,11 +55,7 @@ class MatchedList extends StatelessWidget {
       
       
               // State
-              matchesListProvider.status == Status.loading ? _buildLoadingState(context) : 
-              matchesListProvider.status == Status.error ? _buildErrorState(context) :
-              matchesListProvider.matches!.isEmpty ? _buildEmptyState(context) :
-      
-              _buildMatchesList(context, matchesListProvider.matches!, matchesListProvider),
+              _buildCurrentState(context, matchesListProvider),
             ]
         )
       
@@ -200,12 +196,22 @@ Widget _buildLoadingState(BuildContext context) {
     return RefreshIndicator(
       displacement: 80,
       onRefresh: () async {await Future.delayed(Duration(seconds: 3));await matchesListProvider.loadScholarships(true);},
-      child: ListView.builder(
+      child: ListView.separated(
+        scrollDirection: Axis.vertical,
         shrinkWrap: true,
         physics: const AlwaysScrollableScrollPhysics(), 
         itemCount: matches.length,
-        itemBuilder: (context, index) => Match(match: matches[index]),
+        itemBuilder: (context, index) => Match(match: matches[index]), separatorBuilder: (BuildContext context, int index) { return const SizedBox(height: 30);},
       ),
     );
   }
 
+
+Widget _buildCurrentState(BuildContext context, MatchesListProvider provider) {
+  if (provider.status == Status.loading) return _buildLoadingState(context);
+  if (provider.status == Status.error) return _buildErrorState(context);
+  if (provider.matches == null || provider.matches!.isEmpty) {
+    return _buildEmptyState(context);
+  }
+  return _buildMatchesList(context, provider.matches!, provider);
+}
