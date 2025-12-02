@@ -55,7 +55,7 @@ class MatchedList extends StatelessWidget {
       
       
               // State
-              _buildCurrentState(context, matchesListProvider),
+              Expanded(child: _buildCurrentState(context, matchesListProvider)),
             ]
         )
       
