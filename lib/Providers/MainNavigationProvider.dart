@@ -13,3 +13,9 @@ class MainNavigationProvider extends ChangeNotifier {
 
 
 }
+
+
+
+
+// making navigation enums for better readability
+enum EnPages { profile, matches, alerts }

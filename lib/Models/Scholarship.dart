@@ -61,6 +61,9 @@ class Scholarship {
     };
   }
 
+
+  
+
   // // Helper method to convert Map<dynamic, dynamic> to Map<String, bool>
   // static Map<String, bool>? _convertToBoolMap(dynamic value) {
   //   if (value == null) return null;

@@ -40,6 +40,7 @@ dependencies:
   pdf: ^3.11.0
   printing: ^5.10.5
   open_filex: ^4.7.0
+  firebase_analytics: ^12.0.4
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

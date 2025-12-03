@@ -13,10 +13,13 @@ void directUserBasedOnRole(BuildContext context) {
   final authProvider = Provider.of<AuthenticationProvider>(context, listen: false);
 
   switch (authProvider.userDetails!.role) {
-    case 'ministry':
+    case 'admin':
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => ministryHomeScreen()),
+        MaterialPageRoute(
+          settings: RouteSettings(name: 'ministryHomeScreen'), 
+          builder: (context) => ministryHomeScreen()),
+        
       );
       break;
 
@@ -24,6 +27,7 @@ void directUserBasedOnRole(BuildContext context) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
+          settings: RouteSettings(name: 'userHomeScreen'),
           builder: (context) => ChangeNotifierProvider<UserProfileProvider>(
             create: (context) => UserProfileProvider(authProvider.userDetails!.uid),
             child: userHomeScreen(),

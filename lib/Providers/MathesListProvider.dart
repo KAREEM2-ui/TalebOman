@@ -54,7 +54,7 @@ class MatchesListProvider extends ChangeNotifier
         // if not in cache, or requested to refresh , load from firestore
         if(matches == null || ignoreCache)
         {   
-          matches = await _scholarshipRepo.fetchScholarships(_userProfile);
+          matches = await _scholarshipRepo.fetchMatchedScholarships(_userProfile);
         }
          
          // Save to cache
@@ -88,6 +88,11 @@ class MatchesListProvider extends ChangeNotifier
 
   }
 
+
+  Future<void> _logAnalytics() async
+  {
+    
+  }
 
 
 

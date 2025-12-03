@@ -3,7 +3,6 @@ import 'package:projectapp/Providers/MainNavigationProvider.dart';
 import 'package:projectapp/Providers/MathesListProvider.dart';
 import 'package:projectapp/Providers/userprofileProvider.dart';
 import 'package:projectapp/Screens/User/matchesList.dart';
-import 'package:projectapp/utils/Enums/UserMainScreens.dart';
 import 'package:projectapp/utils/Thems/Widgetsdecorations.dart';
 import 'package:provider/provider.dart';
 
@@ -16,29 +15,27 @@ class MatchesPage extends StatelessWidget {
     var userProfileProvider = Provider.of<UserProfileProvider>(context);
     var theme = Theme.of(context);
 
-   return SizedBox.expand(
-     child: Column(
-       crossAxisAlignment: CrossAxisAlignment.start,
-       children: [
-      Padding(
-        padding: const EdgeInsets.only(left: 12.0,top: 30.0),
-        child: Text(
-          "Welcome Back, ${userProfileProvider.userProfile?.fullName ?? 'Guest'} 👋",
-          style: theme.textTheme.headlineLarge?.copyWith(fontWeight: FontWeight.bold ),
-        ),
+   return Column(
+     crossAxisAlignment: CrossAxisAlignment.start,
+     children: [
+    Padding(
+      padding: const EdgeInsets.only(left: 12.0,top: 30.0),
+      child: Text(
+        "Welcome Back, ${userProfileProvider.userProfile?.fullName ?? 'Guest'} 👋",
+        style: theme.textTheme.headlineLarge?.copyWith(fontWeight: FontWeight.bold ),
       ),
-      const SizedBox(height: 16),
-     
-      // This is the CORRECT way to conditionally show different widgets
-      if (userProfileProvider.userProfile == null)
-        _buildUsernotRegistered(context)
-      else
-        ChangeNotifierProvider(
-          create: (_) => MatchesListProvider(userProfileProvider.userProfile!,userProfileProvider.didUpdated),
-          child: Expanded(child: const MatchedList()),
-        ),
-       ],
-     ),
+    ),
+    const SizedBox(height: 16),
+   
+    // This is the CORRECT way to conditionally show different widgets
+    if (userProfileProvider.userProfile == null)
+      _buildUsernotRegistered(context)
+    else
+      ChangeNotifierProvider(
+        create: (_) => MatchesListProvider(userProfileProvider.userProfile!,userProfileProvider.didUpdated),
+        child: Expanded(child: const MatchedList()),
+      ),
+     ],
    );
     
   }
