@@ -15,19 +15,19 @@ class AppColors {
   static const Color lightOnBackground = Colors.black87;
   static const Color lightOnSurface = Colors.black54;
 
-  // Dark theme colors
-  static const Color darkPrimary = Color(0xFF1E88E5);
+  // Dark theme colors - lighter/softer dark mode
+  static const Color darkPrimary = Color(0xFF42A5F5); // Lighter blue
   static const Color darkSecondary = Color(0xFF03DAC6);
-  static const Color darkBackground = Color(0xFF121212);
-  static const Color darkSurface = Color(0xFF1E1E1E);
-  static const Color darkCard = Color(0xFF1E1E1E);
+  static const Color darkBackground = Color(0xFF1A1A1A); // Lighter dark background
+  static const Color darkSurface = Color(0xFF2A2A2A); // Lighter surface
+  static const Color darkCard = Color(0xFF2D2D2D); // Lighter card
   static const Color darkCardShadow = Color.fromARGB(50, 0, 0, 0);
   
   // Dark theme text colors
   static const Color darkOnPrimary = Colors.white;
   static const Color darkOnSecondary = Colors.black;
-  static const Color darkOnBackground = Colors.white70;
-  static const Color darkOnSurface = Colors.white54;
+  static const Color darkOnBackground = Color(0xFFE0E0E0); // Brighter text
+  static const Color darkOnSurface = Color(0xFFB0B0B0); // Brighter secondary text
 
   // Status colors (used in both themes)
   static const Color error = Color(0xFFB00020);

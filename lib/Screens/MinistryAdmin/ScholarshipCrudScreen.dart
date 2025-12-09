@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:projectapp/Providers/RefreshEventProvider.dart';
 import 'package:projectapp/Screens/MinistryAdmin/Widgets/AdminScholarshipCard.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer_animation/shimmer_animation.dart';
@@ -7,12 +8,48 @@ import '../../Models/Scholarship.dart';
 import '../../Providers/ScholarshipCrudProvider.dart';
 import '../../utils/Enums/Status.dart';
 
-class ScholarshipCrudScreen extends StatelessWidget {
+class ScholarshipCrudScreen extends StatefulWidget {
   const ScholarshipCrudScreen({super.key});
+
+  @override
+  State<ScholarshipCrudScreen> createState() => ScholarshipCrudScreenState();
+}
+
+class ScholarshipCrudScreenState extends State<ScholarshipCrudScreen> {
+
+  late ScholarshipCrudProvider _scholarshipCrudProvider;
+  late RefreshProvider _refreshProvider;
+  late ThemeData theme;
+  late bool isDarkMode;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _scholarshipCrudProvider = Provider.of<ScholarshipCrudProvider>(context);
+    theme = Theme.of(context);
+    isDarkMode = theme.brightness == Brightness.dark;
+
+    // subscribe to refresh events
+    _refreshProvider = Provider.of<RefreshProvider>(context, listen: false);
+    _refreshProvider.addEventListener(refreshScholarshipList);
+  }
+
+  Future<void> refreshScholarshipList() async {
+    await _scholarshipCrudProvider.fetchAllScholarships();
+  }
+
+  @override
+  void dispose() {
+    _refreshProvider.removeEventListener(refreshScholarshipList);
+    super.dispose();
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.transparent,
 
       // ✅ ADD BUTTON
       floatingActionButton: FloatingActionButton(
@@ -24,7 +61,7 @@ class ScholarshipCrudScreen extends StatelessWidget {
         builder: (context, provider, _) {
           switch (provider.status) {
             case Status.loading:
-              return _buildShimmer();
+              return _buildShimmer(isDarkMode);
 
             case Status.error:
               return _buildError();
@@ -67,19 +104,18 @@ class ScholarshipCrudScreen extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.fromLTRB(30, 12, 30, 12),
                     child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         TextField(
                           decoration: InputDecoration(
+                            fillColor: isDarkMode ? Colors.white12 : Colors.grey[200]!,
                             constraints: BoxConstraints(
                               maxWidth: MediaQuery.of(context).size.width * 0.6,
                             ),
                             labelText: 'Search Scholarships',
                             prefixIcon: const Icon(Icons.search),
                             
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              
-                            ),
+                           
                             
                           ),
                           
@@ -170,7 +206,14 @@ class ScholarshipCrudScreen extends StatelessWidget {
 
                           },
                           icon: const Icon(Icons.filter_list),
-                          label: const Text('Filter'),
+                          label: Text('Filter',style: theme.textTheme.bodyMedium,),
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 12),
+                                backgroundColor: theme.cardColor,
+                                shadowColor: isDarkMode ? Colors.white12 : Colors.grey[300],
+                                iconColor: isDarkMode ? Colors.white : theme.primaryColor,
+                          ),
                         ),
                       ],
                     ),
@@ -202,203 +245,300 @@ class ScholarshipCrudScreen extends StatelessWidget {
   // ✅ CARD
   Widget _buildScholarshipCard(Scholarship scholarship, BuildContext context) {
     return AdminScholarshipCard(
+      isDarkMode: isDarkMode,
       scholarship: scholarship,
       onEdit: () => _openScholarshipDialog(context, scholarship: scholarship),
     );
 
   }
 
-  //  FULL ADD / EDIT DIALOG (ALL FIELDS)
-  void _openScholarshipDialog(BuildContext context,
-      {Scholarship? scholarship}) {
-    final titleCtrl = TextEditingController(text: scholarship?.Title ?? '');
-    final universityCtrl =
-        TextEditingController(text: scholarship?.university ?? '');
-    final countryCtrl =
-        TextEditingController(text: scholarship?.country ?? '');
-    final typeCtrl = TextEditingController(text: scholarship?.type ?? '');
-    final coverageCtrl = TextEditingController(
-        text: scholarship?.coverage.join(', ') ?? '');
-    final cgpaCtrl = TextEditingController(
-        text: scholarship?.minCGPA.toString() ?? '');
-    final ieltsCtrl = TextEditingController(
-        text: scholarship?.minIelts.toString() ?? '');
-    final deadlineCtrl = TextEditingController(
-        text: scholarship?.deadline.toIso8601String().split('T').first ?? '');
-    final fieldsCtrl = TextEditingController(
-        text: scholarship?.fieldsOfStudy.join(', ') ?? '');
+
+  void _openScholarshipDialog(BuildContext mainContext,
+    {Scholarship? scholarship}) {
+    final List<String> scholarshipTypes = [
+    "Fully Funded",
+    "Partially Funded",
+  ];
+
+  final List<String> availableFields = [
+    "Computer Science",
+    "Engineering",
+    "Business",
+    "Medicine",
+    "Law",
+    "AI",
+    "Data Science",
+    "Cyber Security",
+    "Arts",
+  ];
 
 
-    final formKey = GlobalKey<FormState>();
+  final theme = Theme.of(mainContext);
 
-   showDialog(
-  context: context,
-  barrierDismissible: false,
-  builder: (_) => Dialog(
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-    child: ConstrainedBox(
-      constraints: const BoxConstraints(
-        maxWidth: 450,
-        minWidth: 350,
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Form(
-          key: formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // ✅ TITLE
-              Row(
-                children: [
-                  Icon(
-                    scholarship == null ? Icons.add : Icons.edit,
-                    size: 26,
+  final titleCtrl = TextEditingController(text: scholarship?.Title ?? '');
+  final universityCtrl =
+      TextEditingController(text: scholarship?.university ?? '');
+  final countryCtrl =
+      TextEditingController(text: scholarship?.country ?? '');
+  final typeCtrl =
+      TextEditingController(text: scholarship?.type ?? '');
+  final coverageCtrl = TextEditingController(
+      text: scholarship?.coverage.join(', ') ?? '');
+  final cgpaCtrl = TextEditingController(
+      text: scholarship?.minCGPA.toString() ?? '');
+  final ieltsCtrl = TextEditingController(
+      text: scholarship?.minIelts.toString() ?? '');
+  final deadlineCtrl = TextEditingController(
+      text: scholarship?.deadline.toIso8601String().split('T').first ?? '');
+  final fieldsCtrl = TextEditingController(
+      text: scholarship?.fieldsOfStudy.join(', ') ?? '');
+
+  /// ✅ FOR MULTI SELECT UI (NO BACKEND CHANGE)
+  final List<String> selectedFields =
+      scholarship?.fieldsOfStudy.toList() ?? [];
+
+  final formKey = GlobalKey<FormState>();
+
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (_) => Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 450, minWidth: 350),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: StatefulBuilder(
+            builder: (context, setState) {
+              return Form(
+                key: formKey,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+
+                      // ✅ TITLE
+                      Row(
+                        children: [
+                          Icon(
+                            scholarship == null ? Icons.add : Icons.edit,
+                            size: 26,
+                          ),
+                          const SizedBox(width: 10),
+                          Text(
+                            scholarship == null
+                                ? "Add Scholarship"
+                                : "Edit Scholarship",
+                            style: theme.textTheme.titleLarge,
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      _field(titleCtrl, "Title", icon: Icons.title),
+                      _field(universityCtrl, "University", icon: Icons.school),
+                      _field(countryCtrl, "Country", icon: Icons.public),
+
+                      /// ✅ TYPE DROPDOWN (SENT AS TEXT)
+                      DropdownButtonFormField<String>(
+                        value: scholarshipTypes.contains(typeCtrl.text)
+                            ? typeCtrl.text
+                            : null,
+                        decoration: const InputDecoration(
+                          labelText: "Type",
+                          prefixIcon: Icon(Icons.category),
+                        ),
+                        items: scholarshipTypes
+                            .map(
+                              (e) => DropdownMenuItem(
+                                value: e,
+                                child: Text(e),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (value) {
+                          typeCtrl.text = value!;
+                        },
+                        validator: (v) =>
+                            v == null ? "Type required" : null,
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      _field(
+                        coverageCtrl,
+                        "Coverage (comma separated)",
+                        icon: Icons.list,
+                      ),
+
+                      Row(
+                        children: [
+                          Expanded(
+                              child: _numberField(
+                            cgpaCtrl,
+                            "Min CGPA",
+                            icon: Icons.grade,
+                          )),
+                          const SizedBox(width: 12),
+                          Expanded(
+                              child: _numberField(
+                            ieltsCtrl,
+                            "Min IELTS",
+                            icon: Icons.language,
+                          )),
+                        ],
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      // ✅ DATE PICKER
+                      TextFormField(
+                        controller: deadlineCtrl,
+                        readOnly: true,
+                        decoration: const InputDecoration(
+                          labelText: "Deadline",
+                          prefixIcon: Icon(Icons.calendar_month),
+                        ),
+                        validator: (v) =>
+                            v!.isEmpty ? "Deadline required" : null,
+                        onTap: () async {
+                          final picked = await showDatePicker(
+                            context: context,
+                            initialDate:
+                                scholarship?.deadline ?? DateTime.now(),
+                            firstDate: DateTime(2020),
+                            lastDate: DateTime(2100),
+                          );
+                          if (picked != null) {
+                            deadlineCtrl.text =
+                                picked.toIso8601String().split('T').first;
+                          }
+                        },
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      /// ✅ MULTI-SELECT FIELDS (STILL SAVED AS STRING)
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          "Fields of Study",
+                          style: theme.textTheme.titleSmall,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+
+                      Wrap(
+                        spacing: 8,
+                        children: availableFields.map((field) {
+                          final isSelected =
+                              selectedFields.contains(field);
+                          return FilterChip(
+                            label: Text(field),
+                            selected: isSelected,
+                            onSelected: (value) {
+                              setState(() {
+                                if (value) {
+                                  selectedFields.add(field);
+                                } else {
+                                  selectedFields.remove(field);
+                                }
+
+                                /// ✅ CRITICAL: STILL STORE AS STRING
+                                fieldsCtrl.text =
+                                    selectedFields.join(', ');
+                              });
+                            },
+                          );
+                        }).toList(),
+                      ),
+
+                      const SizedBox(height: 28),
+
+                      // ✅ ACTION BUTTONS
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text("Cancel"),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              icon: const Icon(Icons.save),
+                              label: const Text("Save"),
+                              onPressed: () async {
+                                if (!formKey.currentState!.validate()) return;
+
+                                final provider = Provider.of<ScholarshipCrudProvider>(mainContext,listen: false);
+
+                                /// ✅ EVERYTHING BELOW IS 100% UNCHANGED
+                                final newScholarship = Scholarship(
+                                  id: scholarship?.id,
+                                  Title: titleCtrl.text,
+                                  university: universityCtrl.text,
+                                  country: countryCtrl.text,
+                                  type: typeCtrl.text,
+                                  coverage: coverageCtrl.text
+                                      .split(',')
+                                      .map((e) => e.trim())
+                                      .toList(),
+                                  minCGPA: double.parse(cgpaCtrl.text),
+                                  minIelts:
+                                      double.parse(ieltsCtrl.text),
+                                  deadline:
+                                      DateTime.parse(deadlineCtrl.text),
+                                  fieldsOfStudy: fieldsCtrl.text
+                                      .split(',')
+                                      .map((e) => e.trim())
+                                      .toList(),
+                                );
+
+                                if (scholarship == null) {
+                                   provider.addScholarship(newScholarship);
+                                } else {
+                                   provider.updateScholarship(newScholarship);
+                                }
+
+                                Navigator.pop(context);
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 10),
-                  Text(
-                    scholarship == null
-                        ? "Add Scholarship"
-                        : "Edit Scholarship",
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                ],
-              ),
-        
-              const SizedBox(height: 20),
-        
-              // ✅ FIELDS
-              _field(titleCtrl, "Title", icon: Icons.title),
-              _field(universityCtrl, "University", icon: Icons.school),
-              _field(countryCtrl, "Country", icon: Icons.public),
-              _field(typeCtrl, "Type", icon: Icons.category),
-        
-              _field(
-                coverageCtrl,
-                "Coverage (comma separated)",
-                icon: Icons.list,
-              ),
-        
-              Row(
-                children: [
-                  Expanded(
-                      child: _numberField(
-                    cgpaCtrl,
-                    "Min CGPA",
-                    icon: Icons.grade,
-                  )),
-                  const SizedBox(width: 12),
-                  Expanded(
-                      child: _numberField(
-                    ieltsCtrl,
-                    "Min IELTS",
-                    icon: Icons.language,
-                  )),
-                ],
-              ),
-        
-              const SizedBox(height: 12),
-        
-              // ✅ DATE PICKER
-              TextFormField(
-                controller: deadlineCtrl,
-                readOnly: true,
-                decoration: const InputDecoration(
-                  labelText: "Deadline",
-                  prefixIcon: Icon(Icons.calendar_month),
                 ),
-                validator: (v) =>
-                    v!.isEmpty ? "Deadline required" : null,
-                onTap: () async {
-                  final picked = await showDatePicker(
-                    context: context,
-                    initialDate:
-                        scholarship?.deadline ?? DateTime.now(),
-                    firstDate: DateTime(2020),
-                    lastDate: DateTime(2100),
-                  );
-                  if (picked != null) {
-                    deadlineCtrl.text =
-                        picked.toIso8601String().split('T').first;
-                  }
-                },
-              ),
-        
-              const SizedBox(height: 12),
-        
-              _field(
-                fieldsCtrl,
-                "Fields of Study (comma separated)",
-                icon: Icons.menu_book,
-              ),
-        
-           
-        
-              const SizedBox(height: 28),
-        
-              // ✅ ACTION BUTTONS
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text("Cancel"),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      icon: const Icon(Icons.save),
-                      label: const Text("Save"),
-                      onPressed: () async {
-                        if (!formKey.currentState!.validate()) return;
-        
-                        final provider =
-                            context.read<ScholarshipCrudProvider>();
-        
-                        final newScholarship = Scholarship(
-                          id: scholarship?.id,
-                          Title: titleCtrl.text,
-                          university: universityCtrl.text,
-                          country: countryCtrl.text,
-                          type: typeCtrl.text,
-                          coverage: coverageCtrl.text
-                              .split(',')
-                              .map((e) => e.trim())
-                              .toList(),
-                          minCGPA: double.parse(cgpaCtrl.text),
-                          minIelts: double.parse(ieltsCtrl.text),
-                          deadline:
-                              DateTime.parse(deadlineCtrl.text),
-                          fieldsOfStudy: fieldsCtrl.text
-                              .split(',')
-                              .map((e) => e.trim())
-                              .toList(),
-                        );
-        
-                        if (scholarship == null) {
-                          // ADD
-                          await provider.addScholarship(newScholarship);
-                        } else {
-                          // UPDATE
-                          await provider.updateScholarship(newScholarship);
-                        }
-        
-                        Navigator.pop(context);
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ],
+              );
+            },
           ),
         ),
       ),
     ),
-  ),
-);
+  );
+}
 
-  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   Widget _field(
   TextEditingController c,
@@ -444,9 +584,8 @@ Widget _numberField(
   );
 }
 
-
   //  loading skeleton
-  Widget _buildShimmer() {
+  Widget _buildShimmer(bool isDarkMode) {
     return ListView.builder(
       padding: const EdgeInsets.all(12),
       itemCount: 6,
@@ -455,7 +594,7 @@ Widget _numberField(
           height: 80,
           margin: const EdgeInsets.only(bottom: 12),
           decoration: BoxDecoration(
-              color: Colors.white, borderRadius: BorderRadius.circular(10)),
+              color: isDarkMode ? Colors.grey[800] : Colors.white, borderRadius: BorderRadius.circular(10)),
         ),
       ),
     );

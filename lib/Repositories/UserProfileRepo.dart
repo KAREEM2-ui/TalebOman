@@ -31,4 +31,14 @@ class UserProfileRepo
   Future<void> updateUserProfile(String userId, Userprofile userProfile) async {
     await _firestore.collection('UserProfiles').doc(userId).set(userProfile.toMap());
   }
+
+  Future<int> getTotalUserProfilesCount() async {
+    try {
+      QuerySnapshot snapshot = await _firestore.collection('UserProfiles').get();
+      return snapshot.size;
+    } catch (e) {
+      print(e);
+      throw Exception('Failed to fetch user profiles count');
+    }
+  }
 }

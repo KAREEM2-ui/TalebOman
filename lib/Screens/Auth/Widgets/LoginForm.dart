@@ -23,6 +23,7 @@ class _LoginformState extends State<Loginform>
   TextEditingController passwordController = TextEditingController();
 
   late AuthenticationProvider _authProvider;
+  late ThemeData theme;
 
 
   @override
@@ -69,10 +70,18 @@ class _LoginformState extends State<Loginform>
   }
 
 
+  @override void didChangeDependencies() {
+    super.didChangeDependencies();
+    _authProvider = Provider.of<AuthenticationProvider>(context);
+    theme = Theme.of(context);
+  }
+
+
+
+
   @override
   Widget build(BuildContext context) {
 
-    _authProvider = Provider.of<AuthenticationProvider>(context);
 
 
     return Container(
@@ -106,7 +115,7 @@ class _LoginformState extends State<Loginform>
           // Email Field
           TextFormField(
             controller: emailController,
-            style: TextStyle(color: Colors.black),
+            style: TextStyle(color: theme.colorScheme.onSurface),
             decoration: customInputDecoration(context,
               labelText: 'Email',
               hintText: 'Enter your email',
@@ -131,13 +140,13 @@ class _LoginformState extends State<Loginform>
           // Password Field
           TextFormField(
             controller: passwordController,
-            style: TextStyle(color: Colors.black),
+            style: TextStyle(color: theme.colorScheme.onSurface),
             decoration: customInputDecoration(context,
               labelText: 'Password',
               hintText: 'Enter your password',
               prefixIcon: Icon(
                     Icons.lock,
-                    color: Theme.of(context).primaryColor,
+                    color:  theme.colorScheme.primary,
                   ),
             ),
             obscureText: true,

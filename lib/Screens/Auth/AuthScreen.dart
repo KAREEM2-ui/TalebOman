@@ -37,6 +37,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
   Widget build(BuildContext context) {
 
     themeProvider = Provider.of<ThemeProvider>(context);
+    final size = MediaQuery.of(context).size;
 
     // pass down the TabController 
     return ChangeNotifierProvider<AuthTabProvider>(
@@ -85,26 +86,21 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
               ),
             
             
+              const SizedBox(height: 40,),
       
-      
-              Container(
-                height: 150,
-                width: 150,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  image: DecorationImage(
-                    image: AssetImage("assets/images/lan11.jpg"),
-                    fit: BoxFit.cover,
-                  ),
+              SizedBox(
+                height: size.height * 0.12,
+                child: Image.asset(
+                  'assets/images/logo.png',
+                  fit: BoxFit.cover,
                 ),
               ),
-              Text("Welcome to Scholarship Finder",
-              style: Theme.of(context).textTheme.headlineLarge,
-              textAlign: TextAlign.center,
-              ),
+              // Text("Sign In to Explore New Opportunities",
+              // style: Theme.of(context).textTheme.headlineLarge,
+              // textAlign: TextAlign.center,
+              // ),
       
-      
-              const SizedBox(height: 20,),
+              const SizedBox(height: 40,),
       
              
               // Tab Bar

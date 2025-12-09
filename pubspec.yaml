@@ -41,6 +41,11 @@ dependencies:
   printing: ^5.10.5
   open_filex: ^4.7.0
   firebase_analytics: ^12.0.4
+  fl_chart: ^1.1.1
+  excel: ^4.0.6
+  file_picker: ^10.3.7
+  flutter_launcher_icons: 0.14.4
+
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -57,6 +62,12 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
+
+# for generating app icons
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/app_icon.png"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

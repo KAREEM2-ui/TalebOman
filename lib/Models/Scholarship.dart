@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:excel/excel.dart';
 
 class Scholarship {
   String? id;
@@ -41,6 +42,20 @@ class Scholarship {
       // Handle both Timestamp (firestore) and string formats (in memory cache)
       deadline: map['deadline'] is Timestamp ? (map['deadline'] as Timestamp).toDate() : DateTime.parse(map['deadline'] as String),
       fieldsOfStudy: List<String>.from(map['fieldsOfStudy'] as List<dynamic>),
+    );
+  }
+
+  factory Scholarship.fromExcel(List<Data?> row) {
+    return Scholarship(
+      Title: row[0]!.value.toString(),
+      university: row[1]!.value.toString(),
+      country: row[2]!.value.toString(),
+      type: row[3]!.value.toString(),
+      coverage: (row[4]!.value.toString()).substring(1, (row[4]!.value.toString()).length - 1).split(',').map((e) => e.trim()).toList(),
+      minCGPA: double.parse(row[5]!.value.toString()),
+      minIelts: double.parse(row[6]!.value.toString()),
+      deadline: DateTime.parse(row[7]!.value.toString()),
+      fieldsOfStudy: (row[8]!.value.toString()).substring(1, (row[8]!.value.toString()).length - 1).split(',').map((e) => e.trim()).toList(),
     );
   }
       

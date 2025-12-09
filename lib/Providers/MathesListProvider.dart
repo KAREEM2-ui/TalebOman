@@ -4,14 +4,17 @@ import 'package:projectapp/Models/UserProfile.dart';
 import '../utils/Enums/Status.dart';
 import '../Models/Scholarship.dart';
 import '../Repositories/ScholarshipRepo.dart';
+import '../Repositories/AnalyticsRepo.dart';
 
 class MatchesListProvider extends ChangeNotifier 
 {
   late Userprofile _userProfile;
   late ScholarshipRepo _scholarshipRepo;
-  List<Scholarship>? matches;
-  Status status = Status.initial;
+  late AnalyticsRepo _analyticsRepo;
 
+  List<Scholarship>? matches;
+
+  Status status = Status.initial;
   String? errorMsg;
 
 
@@ -20,7 +23,7 @@ class MatchesListProvider extends ChangeNotifier
     double baseScorepercentage = 50.0;
 
     // Additional scoring based on criteria
-    baseScorepercentage += (_userProfile.cgpa - scholarship.minCGPA) / (4.0 - scholarship.minCGPA)* 25;
+    baseScorepercentage += (_userProfile.cgpa - scholarship.minCGPA) / (4.0 - scholarship.minCGPA)* 20;
 
     baseScorepercentage += (_userProfile.ieltsScore - scholarship.minIelts) / (9.0 - scholarship.minIelts) * 15; 
 
@@ -28,9 +31,7 @@ class MatchesListProvider extends ChangeNotifier
     baseScorepercentage += 15; // Field of study match bonus
 
     
-    if(baseScorepercentage > 100.0) {
-      baseScorepercentage = 100.0;
-    } 
+   
 
     return baseScorepercentage;
 
@@ -55,6 +56,9 @@ class MatchesListProvider extends ChangeNotifier
         if(matches == null || ignoreCache)
         {   
           matches = await _scholarshipRepo.fetchMatchedScholarships(_userProfile);
+
+          // log analytics for viewed scholarships
+          await _logAnalytics();
         }
          
          // Save to cache
@@ -89,9 +93,15 @@ class MatchesListProvider extends ChangeNotifier
   }
 
 
+
+  // only called when user views matches screen
   Future<void> _logAnalytics() async
   {
-    
+    if(matches != null && matches!.isNotEmpty)
+    {
+      List<String> scholarshipIds = matches!.map((scholarship) => scholarship.id!).toList();
+      await _analyticsRepo.logScholarshipsViewed(scholarshipIds);
+    }
   }
 
 
@@ -101,7 +111,8 @@ class MatchesListProvider extends ChangeNotifier
   {
     _userProfile = userProfile;
     _scholarshipRepo = ScholarshipRepo();
-    
+    _analyticsRepo = AnalyticsRepo();
+
     // if profile was updated, ignore cache
     loadScholarships(didProfileUpdate);
 

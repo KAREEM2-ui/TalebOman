@@ -63,6 +63,22 @@ Future<List<Scholarship>> fetchMatchedScholarships(Userprofile userProfile) asyn
     }
   }
 
+  Future<void> addNewList(List<Scholarship> scholarships) async {
+    WriteBatch batch = _firestore.batch();
+
+    for (Scholarship scholarship in scholarships) {
+      DocumentReference docRef = _firestore.collection('Scholarships').doc();
+      batch.set(docRef, scholarship.toMap());
+    }
+
+    try {
+      await batch.commit();
+    } catch (e) {
+      print(e);
+      throw Exception('Failed to add scholarships in batch');
+    }
+  }
+
 
 
    Future<void> updateById(Scholarship scholarship) async {
@@ -94,11 +110,63 @@ Future<List<Scholarship>> fetchMatchedScholarships(Userprofile userProfile) asyn
 
 
 
+  Future<Scholarship?> getScholarshipById(String id) async {
+    try {
+      final DocumentSnapshot doc = await _firestore.collection('Scholarships').doc(id).get();
+      if (doc.exists) {
+        return Scholarship.fromMap(doc.data() as Map<String, dynamic>, doc.id);
+      } else {
+        return null;
+      }
+    } catch (e) {
+      print(e);
+      throw Exception('Failed to fetch scholarship by ID');
+    }
+  }
 
+
+  Future<int?> getTotalScholarshipsCount() async {
+    try {
+      final AggregateQuerySnapshot snapshot = await _firestore.collection('Scholarships').count().get();
+      return snapshot.count;
+    } catch (e) {
+      print(e);
+      throw Exception('Failed to fetch total scholarships count');
+    }
+  }
   
 
+  Future<int?> getActiveScholarshipsCount() async {
+    try {
+      DateTime now = DateTime.now();
+      final Query activeQuery = _firestore.collection('Scholarships').where("deadline", isGreaterThan: Timestamp.fromDate(now));
+      final AggregateQuerySnapshot snapshot = await activeQuery.count().get();
+      
+      return snapshot.count;
+    } catch (e) {
+      print(e);
+      throw Exception('Failed to fetch active scholarships count');
+    }
+  }
 
 
+  Future<List<Scholarship>> getScholarshipsByCountry(String country) async {
+    try {
+      final QuerySnapshot snapshot = await _firestore
+          .collection('Scholarships')
+          .where('country', isEqualTo: country)
+          .where('deadline', isGreaterThan: Timestamp.fromDate(DateTime.now()))
+          .orderBy('deadline', descending: true)
+          .get();
+
+      return snapshot.docs.map((doc) {
+        return Scholarship.fromMap(doc.data() as Map<String, dynamic>, doc.id);
+      }).toList();
+    } catch (e) {
+      print(e);
+      throw Exception('Failed to fetch scholarships by country');
+    }
+  }
 
 
 

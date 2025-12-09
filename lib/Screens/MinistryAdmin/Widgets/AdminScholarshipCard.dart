@@ -6,13 +6,15 @@ class AdminScholarshipCard extends StatelessWidget {
   final Scholarship scholarship;
   final VoidCallback onEdit;
   final VoidCallback? onTap;
+  final bool isDarkMode;
 
   const AdminScholarshipCard({
-    Key? key,
+    super.key,
     required this.scholarship,
     required this.onEdit,
     this.onTap,
-  }) : super(key: key);
+    required this.isDarkMode,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -42,10 +44,10 @@ class AdminScholarshipCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       scholarship.Title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 17.5,
                         fontWeight: FontWeight.bold,
-                        color: Colors.black87,
+                        color: isDarkMode ? Colors.white : Colors.black87,
                       ),
                     ),
                   ),
