@@ -56,4 +56,16 @@ class AuthRepo
   Future<void> signOut() async {
     await _firebaseAuth.signOut();
   }
+
+  Future<void> sendPasswordResetEmail(String email) async {
+    await _firebaseAuth.sendPasswordResetEmail(email: email);
+  }
+  Future<bool> verifyPasswordResetCode(String code) async {
+    try {
+      await _firebaseAuth.verifyPasswordResetCode(code);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
 }

@@ -60,6 +60,7 @@ class NotificationService {
       requestAlertPermission: true,
       requestBadgePermission: true,
       requestSoundPermission: true,
+      
     );
 
     const InitializationSettings initSettings = InitializationSettings(
@@ -109,7 +110,6 @@ class NotificationService {
     final notification = message.notification;
     final androidDetails = message.notification?.android;
 
-    // Don't show local notification if FCM already showed one (data-only messages)
     if (notification == null) {
       print("Data-only message, skipping local notification");
       return;
@@ -126,71 +126,82 @@ class NotificationService {
           channelDescription: 'Used for important notifications',
           importance: Importance.max,
           priority: Priority.high,
-          icon: '@mipmap/ic_launcher', // small icon (required!)
+          icon: '@mipmap/ic_launcher',
           largeIcon: androidDetails?.imageUrl != null
               ? const DrawableResourceAndroidBitmap('@mipmap/ic_launcher')
               : null,
           styleInformation: notification.body != null
               ? BigTextStyleInformation(notification.body!)
               : null,
+          fullScreenIntent: true, // Shows heads-up notification even when locked
+          enableVibration: true,
+          playSound: true,
+          sound: const RawResourceAndroidNotificationSound('notification_sound'),
         ),
         iOS: const DarwinNotificationDetails(
           presentAlert: true,
           presentBadge: true,
           presentSound: true,
           sound: 'default.wav',
+          interruptionLevel: InterruptionLevel.timeSensitive, // Breaks through focus mode
         ),
       ),
-      payload: message.data['route'] ?? '/', // pass route or any data
+      payload: message.data['route'] ?? '/',
     );
   }
    
   @pragma('vm:entry-point')    
   static Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-      
-      // 2. Re-create the notification channel (in case it was cleared)
-      const AndroidNotificationChannel channel = AndroidNotificationChannel(
-        'high_importance_channel',
-        'High Importance Notifications',
-        description: 'Used for important scholarship alerts',
-        importance: Importance.max,
-      );
+  const AndroidNotificationChannel channel = AndroidNotificationChannel(
+    'high_importance_channel',
+    'High Importance Notifications',
+    description: 'Used for important scholarship alerts',
+    importance: Importance.max,
+  );
 
-      final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-          FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
 
-      await flutterLocalNotificationsPlugin
-          .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
-          ?.createNotificationChannel(channel);
+  await flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+      ?.createNotificationChannel(channel);
 
-      // 3. Show the notification using the exact same look as foreground
-      final notification = message.notification;
-      if (notification != null) {
-        await flutterLocalNotificationsPlugin.show(
-          notification.hashCode,
-          notification.title,
-          notification.body,
-          const NotificationDetails(
-            android: AndroidNotificationDetails(
-              'high_importance_channel',
-              'High Importance Notifications',
-              channelDescription: 'Used for important scholarship alerts',
-              importance: Importance.max,
-              priority: Priority.high,
-              icon: '@mipmap/ic_launcher',
-            ),
-          ),
-          payload: message.data['route'],
-        );
-      }
-    }
+  final notification = message.notification;
+  if (notification != null) {
+    await flutterLocalNotificationsPlugin.show(
+      notification.hashCode,
+      notification.title,
+      notification.body,
+      NotificationDetails(
+        android: AndroidNotificationDetails(
+          'high_importance_channel',
+          'High Importance Notifications',
+          channelDescription: 'Used for important scholarship alerts',
+          importance: Importance.max,
+          priority: Priority.high,
+          icon: '@mipmap/ic_launcher',
+          fullScreenIntent: true, // Show heads-up even when locked
+          enableVibration: true,
+          playSound: true,
+          sound: const RawResourceAndroidNotificationSound('notification_sound'),
+        ),
+        iOS: const DarwinNotificationDetails(
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+          sound: 'default.wav',
+          interruptionLevel: InterruptionLevel.timeSensitive,
+        ),
+      ),
+      payload: message.data['route'],
+    );
+  }
+}
 
   void _handleMessageNavigation(String route) {
-    // Use Navigator, GoRouter, AutoRoute, etc. here
-    // Example with Navigator 2.0:
-    // Navigator.of(context).pushNamed(route);
     print("Navigate to: $route");
-    // You can use a stream or GetX or any state management to trigger navigation
+    // Navigate based on route
+    // Example: if (route == '/alerts') { Navigator.pushNamed(context, '/alerts'); }
   }
 
   // Helper: get FCM token

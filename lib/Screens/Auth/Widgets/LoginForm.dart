@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:projectapp/Screens/Auth/ResetPassword.dart';
 import '../../../utils/Thems/Widgetsdecorations.dart';
 import 'package:provider/provider.dart';
 import 'package:projectapp/Providers/AuthProvider.dart';
@@ -21,6 +22,8 @@ class _LoginformState extends State<Loginform>
   final _formKey = GlobalKey<FormState>();
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
+  bool _obscurePassword = true;
+
 
   late AuthenticationProvider _authProvider;
   late ThemeData theme;
@@ -81,33 +84,33 @@ class _LoginformState extends State<Loginform>
 
   @override
   Widget build(BuildContext context) {
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
-
-
-    return Container(
-      padding: const EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-      color: Theme.of(context).cardColor,
-      borderRadius: BorderRadius.circular(8.0),
-      boxShadow: [
-        BoxShadow(
-          color: const Color.fromARGB(255, 151, 151, 151).withValues(alpha: 0.05), // lighter shadow
-          blurRadius: 2.0, // smaller blur
-          offset: Offset(0, 1), // smaller vertical offset
-        ),
-      ],
-    ),
-
-      child: Form(
-        key: _formKey,
-        child: Column(
-        children: [
-          // Header
-              Text(
-                'Log-in',
-                style: customHeadlineStyle(context),
-                textAlign: TextAlign.center,
+    return SingleChildScrollView(
+      padding: EdgeInsets.only(bottom: bottomInset + 12),
+      child: Container(
+        padding: const EdgeInsets.all(16.0),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(8.0),
+          boxShadow: [
+            BoxShadow(
+              color: const Color.fromARGB(255, 151, 151, 151).withValues(alpha: 0.05), // lighter shadow
+              blurRadius: 2.0, // smaller blur
+              offset: const Offset(0, 1), // smaller vertical offset
             ),
+          ],
+        ),
+        child: Form(
+          key: _formKey,
+          child: Column(
+             children: [
+               // Header
+                   Text(
+                     'Log-in',
+                     style: customHeadlineStyle(context),
+                     textAlign: TextAlign.center,
+                 ),
 
           const SizedBox(height: 20),
 
@@ -121,10 +124,10 @@ class _LoginformState extends State<Loginform>
               hintText: 'Enter your email',
               prefixIcon: Icon(
                     Icons.email,
-                    color: Theme.of(context).primaryColor,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                 ),    
-
+            textInputAction: TextInputAction.next,
             keyboardType: TextInputType.emailAddress,
             validator: (value) {
               if (value == null || value.isEmpty) {
@@ -140,6 +143,7 @@ class _LoginformState extends State<Loginform>
           // Password Field
           TextFormField(
             controller: passwordController,
+            textInputAction: TextInputAction.done,
             style: TextStyle(color: theme.colorScheme.onSurface),
             decoration: customInputDecoration(context,
               labelText: 'Password',
@@ -148,8 +152,19 @@ class _LoginformState extends State<Loginform>
                     Icons.lock,
                     color:  theme.colorScheme.primary,
                   ),
+              suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _obscurePassword = !_obscurePassword;
+                          });
+                        },
+                      ),
             ),
-            obscureText: true,
+            obscureText: _obscurePassword,
             validator: (value) {
               if (value == null || value.isEmpty) {
                 return 'Please enter your password';
@@ -206,9 +221,31 @@ class _LoginformState extends State<Loginform>
               ),
 
 
+              const SizedBox(height: 10),
+
+              // Forgot Password Button
+              TextButton(
+                onPressed: () {
+                  // Navigate to Reset Password Screen
+                  Navigator.push(context, MaterialPageRoute(
+                    builder: (context) => const ResetPasswordScreen(),
+                  ));
+                  
+                },
+                child: Text(
+                  'Forgot Password?',
+                  style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                    color: Theme.of(context).colorScheme.primary,
+                    decoration: TextDecoration.underline,
+                  ),
+                ),
+              ),
+
+
               
          
         ],
+    )
     )
     )
     );

@@ -5,12 +5,9 @@ import '../../Providers/userprofileProvider.dart';
 import 'package:provider/provider.dart';
 
 class ProfileDetails extends StatefulWidget {
-
   const ProfileDetails({super.key});
 
-
   @override
-  // ignore: no_logic_in_create_state
   State<ProfileDetails> createState() => _ProfileDetailsState();
 }
 
@@ -18,29 +15,36 @@ class _ProfileDetailsState extends State<ProfileDetails> {
   final _formKey = GlobalKey<FormState>();
 
   // Controllers
-  final _fullNameController = TextEditingController();
-  final _cgpaController = TextEditingController();
-  final _ieltsScoreController = TextEditingController();
-
-
+  late TextEditingController _fullNameController;
+  late TextEditingController _cgpaController;
+  late TextEditingController _ieltsScoreController;
 
   late UserProfileProvider _userProfileProvider;
   late Userprofile _userProfile;
+  bool _isInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _fullNameController = TextEditingController();
+    _cgpaController = TextEditingController();
+    _ieltsScoreController = TextEditingController();
+  }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    // if Profile Exist show it , otherwise create new 
-    _userProfileProvider = Provider.of<UserProfileProvider>(context, listen: false);
-    _userProfile = _userProfileProvider.userProfile?.copy() ?? Userprofile.newUserProfile();
+    if (!_isInitialized) {
+      _userProfileProvider = Provider.of<UserProfileProvider>(context, listen: false);
+      _userProfile = _userProfileProvider.userProfile?.copy() ?? Userprofile.newUserProfile();
 
-
-    // Initialize controllers with existing data if available
-    _fullNameController.text = _userProfile.fullName ;
-    _cgpaController.text = _userProfile.cgpa.toString() ;
-    _ieltsScoreController.text = _userProfile.ieltsScore.toString() ;
-
+      _fullNameController.text = _userProfile.fullName ?? '';
+      _cgpaController.text = (_userProfile.cgpa ?? 0.0).toString();
+      _ieltsScoreController.text = (_userProfile.ieltsScore ?? 0.0).toString();
+      
+      _isInitialized = true;
+    }
   }
 
   @override
@@ -51,50 +55,76 @@ class _ProfileDetailsState extends State<ProfileDetails> {
     super.dispose();
   }
 
-
-  void _handleProfileSave() async 
-  {
-    if(!_formKey.currentState!.validate())
-      {
-        return;
-      }
-
-    // Save profile logic
-    try
-    {
-      _userProfile.fullName = _fullNameController.text.trim();
-
-      _userProfile.cgpa = double.parse(_cgpaController.text.trim());
-
-      _userProfile.ieltsScore = double.parse(_ieltsScoreController.text.trim());
-
-      await _userProfileProvider.updateUserProfile(_userProfile);
-     
+  void _handleProfileSave() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
     }
-    catch(e){}
+
+    try {
+      _userProfile.fullName = _fullNameController.text.trim();
+      _userProfile.cgpa = double.tryParse(_cgpaController.text.trim()) ?? 0.0;
+      _userProfile.ieltsScore = double.tryParse(_ieltsScoreController.text.trim()) ?? 0.0;
+      
+      await _userProfileProvider.updateUserProfile(_userProfile);
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Profile updated successfully',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Colors.white,
+              ),
+            ),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Error updating profile: ${e.toString()}',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Colors.white,
+              ),
+            ),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final size = MediaQuery.of(context).size;
+    final scale = (size.width / 400).clamp(0.85, 1.2);
 
-    ThemeData theme = Theme.of(context);
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
-          'Profile Details ${_userProfile.fullName}',
+          'Profile Details ${_userProfile.fullName ?? 'User'}',
           style: theme.textTheme.titleLarge?.copyWith(
             fontWeight: FontWeight.bold,
+            fontSize: (theme.textTheme.titleLarge?.fontSize ?? 20) * scale,
+            color: theme.colorScheme.onSurface,
           ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.symmetric(horizontal: 12 * scale, vertical: 16 * scale),
           child: Form(
             key: _formKey,
             child: Column(
@@ -102,7 +132,7 @@ class _ProfileDetailsState extends State<ProfileDetails> {
               children: [
                 // Header Card
                 Container(
-                  padding: const EdgeInsets.all(24),
+                  padding: EdgeInsets.all(20 * scale),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
@@ -112,12 +142,12 @@ class _ProfileDetailsState extends State<ProfileDetails> {
                         theme.colorScheme.primary.withValues(alpha: 0.05),
                       ],
                     ),
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(20 * scale),
                     boxShadow: [
                       BoxShadow(
                         color: theme.shadowColor.withValues(alpha: 0.1),
-                        blurRadius: 20,
-                        offset: const Offset(0, 10),
+                        blurRadius: 20 * scale,
+                        offset: Offset(0, 10 * scale),
                       ),
                     ],
                   ),
@@ -125,33 +155,38 @@ class _ProfileDetailsState extends State<ProfileDetails> {
                     children: [
                       Icon(
                         Icons.person,
-                        size: 60,
+                        size: 60 * scale,
                         color: theme.colorScheme.primary,
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16 * scale),
                       Text(
                         'Complete Your Profile',
-                        style: theme.textTheme.headlineMedium,
+                        style: theme.textTheme.headlineMedium?.copyWith(
+                          fontSize: (theme.textTheme.headlineMedium?.fontSize ?? 24) * scale,
+                          color: theme.colorScheme.onSurface,
+                          fontWeight: FontWeight.bold,
+                        ),
                         textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8 * scale),
                       Text(
                         'Help us find the best scholarships for you',
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                          fontSize: (theme.textTheme.bodyMedium?.fontSize ?? 14) * scale,
                         ),
                         textAlign: TextAlign.center,
                       ),
                     ],
                   ),
                 ),
-        
-                const SizedBox(height: 32),
-        
+
+                SizedBox(height: 32 * scale),
+
                 // Personal Information Section
-                _buildSectionTitle('Personal Information'),
-                const SizedBox(height: 16),
-        
+                _buildSectionTitle('Personal Information', scale, theme),
+                SizedBox(height: 16 * scale),
+
                 // Full Name
                 TextFormField(
                   controller: _fullNameController,
@@ -161,25 +196,29 @@ class _ProfileDetailsState extends State<ProfileDetails> {
                     hintText: 'Enter your full name',
                     prefixIcon: Icon(
                       Icons.person_outline,
-                      color: theme.colorScheme.primary
+                      color: theme.colorScheme.primary,
+                      size: 20 * scale,
                     ),
+                  ),
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontSize: (theme.textTheme.bodyMedium?.fontSize ?? 14) * scale,
+                    color: theme.colorScheme.onSurface,
                   ),
                   textCapitalization: TextCapitalization.words,
                   textInputAction: TextInputAction.next,
                   validator: (value) {
-                      if(value == null || value.isEmpty)
-                      {
-                        return "Please enter your full name";
-                      }
-                      return null;
+                    if (value == null || value.trim().isEmpty) {
+                      return "Please enter your full name";
+                    }
+                    return null;
                   },
                 ),
-                       
-                const SizedBox(height: 20),
-                
+
+                SizedBox(height: 20 * scale),
+
                 // Field of Interest Dropdown
                 DropdownButtonFormField<String>(
-                  initialValue: _userProfile.fieldOfInterest,
+                  value: _userProfile.fieldOfInterest,
                   decoration: customInputDecoration(
                     context,
                     labelText: 'Field of Interest *',
@@ -187,59 +226,42 @@ class _ProfileDetailsState extends State<ProfileDetails> {
                     prefixIcon: Icon(
                       Icons.people_outline,
                       color: theme.colorScheme.primary,
+                      size: 20 * scale,
                     ),
                   ),
-                  items: const [
-                    DropdownMenuItem(value: null, child: Text('Select Field of Interest')),
-                    // STEM
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontSize: (theme.textTheme.bodyMedium?.fontSize ?? 14) * scale,
+                    color: theme.colorScheme.onSurface,
+                  ),
+                  isExpanded: true,
+                  items: [
                     DropdownMenuItem(
-                      value: 'STEM',
-                      child: SizedBox(
-                        width: 300,  
-                        child: Text(
-                          'STEM (Science, Technology, Engineering, Mathematics)',
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
+                      value: null,
+                      child: Text(
+                        'Select Field of Interest',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          fontSize: (theme.textTheme.bodyMedium?.fontSize ?? 14) * scale,
+                          color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                         ),
                       ),
                     ),
-
-                    // Health & Medicine
-                    DropdownMenuItem(value: 'Health', child: Text('Health & Medicine')),
-
-                    // Business & Economics
-                    DropdownMenuItem(value: 'Business', child: Text('Business & Economics')),
-
-                    // Arts & Humanities
-                    DropdownMenuItem(value: 'Arts', child: Text('Arts & Humanities')),
-
-                    // Social Sciences
-                    DropdownMenuItem(value: 'Social', child: Text('Social Sciences')),
-
-                    // Law & Public Policy
-                    DropdownMenuItem(value: 'Law', child: Text('Law & Public Policy')),
-
+                    ..._buildDropdownItems(scale, theme),
                   ],
                   onChanged: (value) {
                     setState(() {
                       _userProfile.fieldOfInterest = value;
                     });
                   },
-        
-                  validator: (value){
-                    if(value == null)
-                    {
+                  validator: (value) {
+                    if (value == null) {
                       return "Field of Interest is required";
                     }
                     return null;
                   },
                 ),
-        
-        
-                
-        
-                const SizedBox(height: 20),
-        
+
+                SizedBox(height: 20 * scale),
+
                 // CGPA
                 TextFormField(
                   controller: _cgpaController,
@@ -250,31 +272,32 @@ class _ProfileDetailsState extends State<ProfileDetails> {
                     prefixIcon: Icon(
                       Icons.grade_outlined,
                       color: theme.colorScheme.primary,
+                      size: 20 * scale,
                     ),
+                  ),
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontSize: (theme.textTheme.bodyMedium?.fontSize ?? 14) * scale,
+                    color: theme.colorScheme.onSurface,
                   ),
                   keyboardType: TextInputType.numberWithOptions(decimal: true),
                   textInputAction: TextInputAction.next,
-        
-                  validator: (value){
-                    if(value != null)
-                    {
+                  validator: (value) {
+                    if (value != null && value.trim().isNotEmpty) {
                       final double? cgpa = double.tryParse(value.trim());
-                      if(cgpa == null || cgpa < 0 || cgpa > 4)
-                      {
-                        return "Invalid CGPA. Please enter a CGPA between 0 and 4.";
+                      if (cgpa == null || cgpa <= 0 || cgpa > 4) {
+                        return "Invalid CGPA. Please enter a value between 0 and 4.";
                       }
                     }
                     return null;
-                  }
+                  },
                 ),
-        
-                const SizedBox(height: 20),
-        
-        
+
+                SizedBox(height: 20 * scale),
+
                 // Language Proficiency Section
-                _buildSectionTitle('Language Proficiency'),
-                const SizedBox(height: 16),
-        
+                _buildSectionTitle('Language Proficiency', scale, theme),
+                SizedBox(height: 16 * scale),
+
                 // IELTS Score
                 TextFormField(
                   controller: _ieltsScoreController,
@@ -285,28 +308,31 @@ class _ProfileDetailsState extends State<ProfileDetails> {
                     prefixIcon: Icon(
                       Icons.quiz_outlined,
                       color: theme.colorScheme.primary,
+                      size: 20 * scale,
                     ),
                   ),
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontSize: (theme.textTheme.bodyMedium?.fontSize ?? 14) * scale,
+                    color: theme.colorScheme.onSurface,
+                  ),
                   keyboardType: TextInputType.numberWithOptions(decimal: true),
-                  textInputAction: TextInputAction.next,
-                  validator: (value){
-                    if(value != null)
-                    {
+                  textInputAction: TextInputAction.done,
+                  validator: (value) {
+                    if (value != null && value.trim().isNotEmpty) {
                       final double? ielts = double.tryParse(value.trim());
-                      if(ielts == null || ielts < 0 || ielts > 9)
-                      {
-                        return "Invalid IELTS score. Please enter a score between 0 and 9.";
+                      if (ielts == null || ielts < 0 || ielts > 9) {
+                        return "Invalid IELTS score.\n Please enter a value between 0 and 9.";
                       }
                     }
                     return null;
-                  }
+                  },
                 ),
-                
-                const SizedBox(height: 48),
-        
+
+                SizedBox(height: 48 * scale),
+
                 // Save Button
                 Container(
-                  height: 56,
+                  height: 56 * scale,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
@@ -314,35 +340,37 @@ class _ProfileDetailsState extends State<ProfileDetails> {
                         theme.colorScheme.primary.withValues(alpha: 0.8),
                       ],
                     ),
-                    borderRadius: BorderRadius.circular(28),
+                    borderRadius: BorderRadius.circular(28 * scale),
                     boxShadow: [
                       BoxShadow(
                         color: theme.colorScheme.primary.withValues(alpha: 0.3),
-                        blurRadius: 15,
-                        offset: const Offset(0, 8),
+                        blurRadius: 15 * scale,
+                        offset: Offset(0, 8 * scale),
                       ),
                     ],
                   ),
                   child: ElevatedButton.icon(
-                    style: theme.elevatedButtonTheme.style,
-                    onPressed: () {
-                      _handleProfileSave();
-                    },
-                    icon: const Icon(
+                    style: theme.elevatedButtonTheme.style?.copyWith(
+                      padding: MaterialStatePropertyAll(
+                        EdgeInsets.symmetric(horizontal: 20 * scale, vertical: 12 * scale),
+                      ),
+                    ),
+                    onPressed: _handleProfileSave,
+                    icon: Icon(
                       Icons.save,
                       color: Colors.white,
+                      size: 20 * scale,
                     ),
                     label: Text(
                       'Save Profile',
                       style: theme.textTheme.labelLarge?.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.w600,
-                        fontSize: 16,
+                        fontSize: 16 * scale,
                       ),
                     ),
                   ),
                 ),
-        
               ],
             ),
           ),
@@ -351,23 +379,56 @@ class _ProfileDetailsState extends State<ProfileDetails> {
     );
   }
 
-  Widget _buildSectionTitle(String title) {
+  List<DropdownMenuItem<String>> _buildDropdownItems(double scale, ThemeData theme) {
+    final items = ['STEM', 'Health', 'Business', 'Arts', 'Social', 'Law'];
+    final labels = [
+      'STEM',
+      'Health & Medicine',
+      'Business & Economics',
+      'Arts & Humanities',
+      'Social Sciences',
+      'Law & Public Policy',
+    ];
+
+    return List.generate(
+      items.length,
+      (index) => DropdownMenuItem(
+        value: items[index],
+        child: Text(
+          labels[index],
+          style: theme.textTheme.bodyMedium?.copyWith(
+            fontSize: (theme.textTheme.bodyMedium?.fontSize ?? 14) * scale,
+            color: theme.colorScheme.onSurface,
+          ),
+          overflow: TextOverflow.ellipsis,
+          maxLines: 1,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title, double scale, ThemeData theme) {
     return Row(
       children: [
         Container(
-          width: 4,
-          height: 24,
+          width: 4 * scale,
+          height: 24 * scale,
           decoration: BoxDecoration(
-            color: Theme.of(context).primaryColor,
-            borderRadius: BorderRadius.circular(2),
+            color: theme.colorScheme.primary,
+            borderRadius: BorderRadius.circular(2 * scale),
           ),
         ),
-        const SizedBox(width: 12),
-        Text(
-          title,
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).primaryColor,
+        SizedBox(width: 12 * scale),
+        Expanded(
+          child: Text(
+            title,
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: theme.colorScheme.onSurface,
+              fontSize: (theme.textTheme.titleLarge?.fontSize ?? 20) * scale,
+            ),
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
           ),
         ),
       ],

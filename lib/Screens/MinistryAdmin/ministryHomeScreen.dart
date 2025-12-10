@@ -34,8 +34,10 @@ class _ministryHomeScreenState extends State<ministryHomeScreen> {
     final theme = Theme.of(context);
     final themeProvider = Provider.of<ThemeProvider>(context);
     final authProvider = Provider.of<AuthenticationProvider>(context);
-    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+    final isDarkMode = theme.brightness == Brightness.dark;
     final size = MediaQuery.of(context).size;
+    // Responsive scale based on device width (clamped for tablets/phones)
+    final scale = (size.width / 400).clamp(0.85, 1.2);
 
     void handleLogout() {
       authProvider.logout();
@@ -51,32 +53,31 @@ class _ministryHomeScreenState extends State<ministryHomeScreen> {
         appBar: AppBar(
           title: Text(
             _titles[_currentIndex],
-            style: theme.textTheme.titleLarge
+            style: theme.textTheme.titleLarge,
           ),
-          actionsPadding: const EdgeInsets.only(right: 8.0, bottom: 12.0),
+          actionsPadding: EdgeInsets.only(right: 8.0 * scale, bottom: 12.0 * scale),
           backgroundColor: Colors.transparent,
           elevation: 0,
           centerTitle: true,
           leading: GestureDetector(
             onTap: handleLogout,
             child: Padding(
-              padding: const EdgeInsets.all(8.0),
+             padding: EdgeInsets.all(8.0 * scale),
               child: Icon(
                 Icons.logout_outlined,
                 color: theme.iconTheme.color,
-                size: 28,
+               size: 28 * scale,
               ),
             ),
           ),
           actions: [
             Padding(
-              padding: const EdgeInsets.only(right: 16.0),
+             padding: EdgeInsets.only(right: 16.0 * scale),
               child: Container(
-                padding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+               padding: EdgeInsets.symmetric(horizontal: 12 * scale, vertical: 8 * scale),
                 decoration: BoxDecoration(
                   color: theme.cardColor,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(20 * scale),
                   boxShadow: [
                     BoxShadow(
                       color: theme.shadowColor.withValues(alpha: 0.1),
@@ -91,9 +92,9 @@ class _ministryHomeScreenState extends State<ministryHomeScreen> {
                     Icon(
                       isDarkMode ? Icons.dark_mode : Icons.light_mode,
                       color: theme.iconTheme.color,
-                      size: 18,
+                     size: 18 * scale,
                     ),
-                    const SizedBox(width: 6),
+                    SizedBox(width: 6 * scale),
                     Switch(
                       value: isDarkMode,
                       onChanged: (value) {
@@ -102,7 +103,6 @@ class _ministryHomeScreenState extends State<ministryHomeScreen> {
                       activeThumbColor: theme.switchTheme.thumbColor!.resolve({}),
                       activeTrackColor: theme.switchTheme.trackColor!.resolve({}),
                     ),
-                      
                   ],
                 ),
               ),
@@ -137,14 +137,14 @@ class _ministryHomeScreenState extends State<ministryHomeScreen> {
           ),
         ),
         bottomNavigationBar: BottomNavigationBar(
-          iconSize: 35,
+         iconSize: 32 * scale,
           currentIndex: _currentIndex,
           type: BottomNavigationBarType.fixed,
           backgroundColor: theme.bottomNavigationBarTheme.backgroundColor,
           selectedItemColor: theme.colorScheme.primary,
           unselectedItemColor: theme.colorScheme.onSurface.withValues(alpha: 0.3),
-          selectedLabelStyle: theme.textTheme.bodySmall,
-          unselectedLabelStyle: theme.textTheme.bodySmall,
+         selectedLabelStyle: theme.textTheme.bodySmall?.copyWith(fontSize: (theme.textTheme.bodySmall?.fontSize ?? 12) * scale),
+         unselectedLabelStyle: theme.textTheme.bodySmall?.copyWith(fontSize: (theme.textTheme.bodySmall?.fontSize ?? 12) * scale),
           onTap: (idx) => setState(() => _currentIndex = idx),
           items: const [
             BottomNavigationBarItem(

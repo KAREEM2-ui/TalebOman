@@ -43,7 +43,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
     return ChangeNotifierProvider<AuthTabProvider>(
       create: (_) => AuthTabProvider(_tabController),
       child: Scaffold(
-        
+        resizeToAvoidBottomInset: true,
         body: SafeArea(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(8.0, 16.0, 8.0,0),

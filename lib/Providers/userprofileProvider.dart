@@ -11,6 +11,7 @@ class UserProfileProvider extends ChangeNotifier
   Status status = Status.initial;
   late String uid;
   bool didUpdated = false;
+  int alertsCount = 0;
 
 
   Future<void> updateUserProfile(Userprofile userProfile) async {
@@ -21,6 +22,7 @@ class UserProfileProvider extends ChangeNotifier
       await _userProfileRepo.updateUserProfile(uid, userProfile);
       status = Status.completed;
       _userProfile = userProfile;
+      didUpdated = true;
       notifyListeners();
     }
     catch(e)
@@ -42,14 +44,45 @@ class UserProfileProvider extends ChangeNotifier
     try
     {
       _userProfile = await _userProfileRepo.fetchUserProfile(uid);
-      print(_userProfile?.fullName);
       status = Status.completed;
+      await alertsCountInitial();
       notifyListeners();
     }
     catch(e)
     {
       status = Status.error;
       notifyListeners();
+    }
+  }
+
+
+  Future<void> alertsCountInitial() async
+  {
+    if(_userProfile == null) return;
+
+    try
+    {
+      alertsCount = await _userProfileRepo.fetchAlertsCount(uid);
+    }
+    catch(e)
+    {
+      // handle error if needed
+    }
+  }
+
+  Future<void> markAllAlertsAsRead() async
+  {
+    if(_userProfile == null || alertsCount == 0) return;
+
+    try
+    {
+      await _userProfileRepo.markAllAsRead(uid);
+      alertsCount = 0;
+      notifyListeners();
+    }
+    catch(e)
+    {
+      throw Exception('Failed to mark alerts as read: $e');
     }
   }
 

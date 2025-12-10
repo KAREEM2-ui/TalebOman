@@ -21,6 +21,13 @@ class ScholarshipCrudScreenState extends State<ScholarshipCrudScreen> {
   late RefreshProvider _refreshProvider;
   late ThemeData theme;
   late bool isDarkMode;
+  late TextEditingController _searchCtrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _searchCtrl = TextEditingController();
+  }
 
   @override
   void didChangeDependencies() {
@@ -29,7 +36,6 @@ class ScholarshipCrudScreenState extends State<ScholarshipCrudScreen> {
     theme = Theme.of(context);
     isDarkMode = theme.brightness == Brightness.dark;
 
-    // subscribe to refresh events
     _refreshProvider = Provider.of<RefreshProvider>(context, listen: false);
     _refreshProvider.addEventListener(refreshScholarshipList);
   }
@@ -41,22 +47,18 @@ class ScholarshipCrudScreenState extends State<ScholarshipCrudScreen> {
   @override
   void dispose() {
     _refreshProvider.removeEventListener(refreshScholarshipList);
+    _searchCtrl.dispose();
     super.dispose();
   }
-
-
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
-
-      // ✅ ADD BUTTON
       floatingActionButton: FloatingActionButton(
         onPressed: () => _openScholarshipDialog(context),
         child: const Icon(Icons.add),
       ),
-
       body: Consumer<ScholarshipCrudProvider>(
         builder: (context, provider, _) {
           switch (provider.status) {
@@ -74,30 +76,27 @@ class ScholarshipCrudScreenState extends State<ScholarshipCrudScreen> {
 
               return Column(
                 children: [
-                  
                   Padding(
                     padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
                     child: Column(
                       children: [
                         const Text(
-                        'Scholarships List',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
+                          'Scholarships List',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-
-                      Text("Total Scholarships: ${provider.scholarships!.length} ",
-                        style: const TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey,
+                        Text(
+                          "Total Scholarships: ${provider.scholarships!.length} ",
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey,
+                          ),
                         ),
-                      ),
                       ],
                     ),
                   ),
-
-
                   const SizedBox(height: 12),
 
                   // filter
@@ -106,127 +105,77 @@ class ScholarshipCrudScreenState extends State<ScholarshipCrudScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        TextField(
-                          decoration: InputDecoration(
-                            fillColor: isDarkMode ? Colors.white12 : Colors.grey[200]!,
-                            constraints: BoxConstraints(
-                              maxWidth: MediaQuery.of(context).size.width * 0.6,
+                        Flexible(
+                          flex: 4,
+                          child: TextField(
+                            controller: _searchCtrl,
+                            autofocus: false,
+                            onTapOutside: (event) {
+                              FocusScope.of(context).unfocus();
+                            },
+                            decoration: InputDecoration(
+                              fillColor: isDarkMode ? Colors.white12 : Colors.grey[200]!,
+                              labelText: 'Search',
+                              prefixIcon: const Icon(Icons.search),
+                              suffixIcon: _searchCtrl.text.isNotEmpty
+                                  ? IconButton(
+                                      icon: const Icon(Icons.clear),
+                                      onPressed: () {
+                                        _searchCtrl.clear();
+                                        provider.applySearchFilter('');
+                                      },
+                                    )
+                                  : null,
                             ),
-                            labelText: 'Search Scholarships',
-                            prefixIcon: const Icon(Icons.search),
-                            
-                           
-                            
+                            onChanged: (value) {
+                              provider.applySearchFilter(value);
+                              setState(() {}); // Only to show/hide clear button
+                            },
                           ),
-                          
-                          onChanged: (value) {
-                          },
                         ),
-                    
                         const SizedBox(width: 12),
-                    
-                        ElevatedButton.icon(
-                          onPressed: () {
-                            
-                            // open filter bottom sheet
-                            showModalBottomSheet(
-                            context: context,
-                            showDragHandle: true,
-                            useSafeArea: true,
-                            isScrollControlled: true, // ✅ IMPORTANT for height control & keyboard
-                            backgroundColor: Colors.lightBlueAccent[100], // ✅ allows rounded gradient container
-                            builder: (context) {
-                              return Padding(
-                                padding: EdgeInsets.only(
-                                  bottom: MediaQuery.of(context).viewInsets.bottom, // ✅ keyboard safe
-                                ),
-                                child: Container(
-                                  width: double.infinity,
-                                  constraints: BoxConstraints(
-                                    minHeight: MediaQuery.of(context).size.height * 0.5,
-                                    maxHeight: MediaQuery.of(context).size.height * 0.5,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    borderRadius: const BorderRadius.only(
-                                      topLeft: Radius.circular(20),
-                                      topRight: Radius.circular(20),
-                                    ),
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        Colors.lightBlueAccent.shade100,
-                                        Colors.white,
-                                      ],
-                                      begin: Alignment.topCenter,
-                                      end: Alignment.bottomCenter,
-                                    ),
-                                  ),
-                                  padding: const EdgeInsets.all(16),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min, // ✅ VERY IMPORTANT
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Filter Scholarships',
-                                        style: Theme.of(context).textTheme.titleLarge,
-                                      ),
-                                      const SizedBox(height: 16),
-
-                                      // ✅ PLACE FILTERS HERE
-                                      const Text('Filter options will go here'),
-
-                                      const Spacer(),
-
-                                      // ✅ ACTION BUTTONS
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            child: OutlinedButton(
-                                              onPressed: () => Navigator.pop(context),
-                                              child: const Text("Cancel"),
-                                            ),
-                                          ),
-                                          const SizedBox(width: 12),
-                                          Expanded(
-                                            child: ElevatedButton(
-                                              onPressed: () {
-                                                // ✅ apply filters here
-                                                Navigator.pop(context);
-                                              },
-                                              child: const Text("Apply"),
-                                            ),
-                                          ),
-                                        ],
-                                      )
-                                    ],
-                                  ),
-                                ),
+                        Flexible(
+                          flex: 2,
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              showModalBottomSheet(
+                                context: context,
+                                showDragHandle: true,
+                                useSafeArea: true,
+                                isScrollControlled: true,
+                                backgroundColor: Colors.transparent,
+                                builder: (context) {
+                                  return _FilterBottomSheet(
+                                    provider: _scholarshipCrudProvider,
+                                    theme: theme,
+                                    isDarkMode: isDarkMode,
+                                  );
+                                },
                               );
                             },
-                          );
-
-                          },
-                          icon: const Icon(Icons.filter_list),
-                          label: Text('Filter',style: theme.textTheme.bodyMedium,),
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 12),
-                                backgroundColor: theme.cardColor,
-                                shadowColor: isDarkMode ? Colors.white12 : Colors.grey[300],
-                                iconColor: isDarkMode ? Colors.white : theme.primaryColor,
+                            icon: const Icon(Icons.filter_list),
+                            label: const Text('Filter'),
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 12),
+                              backgroundColor: theme.cardColor,
+                              shadowColor: isDarkMode ? Colors.white12 : Colors.grey[300],
+                              iconColor: isDarkMode ? Colors.white : theme.primaryColor,
+                              textStyle: theme.textTheme.bodyMedium,
+                              foregroundColor: theme.colorScheme.onSurface,
+                            ),
                           ),
                         ),
                       ],
                     ),
                   ),
 
-
-
                   Expanded(
                     child: ListView.builder(
                       padding: const EdgeInsets.all(12),
-                      itemCount: provider.scholarships!.length,
+                      itemCount: provider.filteredScholarships!.length,
                       itemBuilder: (_, index) {
-                        final scholarship = provider.scholarships![index];
+                        final scholarship = provider.filteredScholarships![index];
                         return _buildScholarshipCard(scholarship, context);
                       },
                     ),
@@ -249,9 +198,7 @@ class ScholarshipCrudScreenState extends State<ScholarshipCrudScreen> {
       scholarship: scholarship,
       onEdit: () => _openScholarshipDialog(context, scholarship: scholarship),
     );
-
   }
-
 
   void _openScholarshipDialog(BuildContext mainContext,
     {Scholarship? scholarship}) {
@@ -517,72 +464,52 @@ class ScholarshipCrudScreenState extends State<ScholarshipCrudScreen> {
           ),
         ),
       ),
-    ),
-  );
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    ));
+  }
 
   Widget _field(
-  TextEditingController c,
-  String label, {
-  bool required = true,
-  IconData? icon,
-}) {
-  return Padding(
-    padding: const EdgeInsets.only(bottom: 12),
-    child: TextFormField(
-      controller: c,
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: icon == null ? null : Icon(icon),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+    TextEditingController c,
+    String label, {
+    bool required = true,
+    IconData? icon,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: TextFormField(
+        controller: c,
+        decoration: InputDecoration(
+          labelText: label,
+          prefixIcon: icon == null ? null : Icon(icon),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+        validator:
+            required ? (v) => v!.isEmpty ? "$label required" : null : null,
       ),
-      validator:
-          required ? (v) => v!.isEmpty ? "$label required" : null : null,
-    ),
-  );
-}
+    );
+  }
 
-Widget _numberField(
-  TextEditingController c,
-  String label, {
-  bool required = true,
-  IconData? icon,
-}) {
-  return Padding(
-    padding: const EdgeInsets.only(bottom: 12),
-    child: TextFormField(
-      controller: c,
-      keyboardType: TextInputType.number,
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: icon == null ? null : Icon(icon),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+  Widget _numberField(
+    TextEditingController c,
+    String label, {
+    bool required = true,
+    IconData? icon,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: TextFormField(
+        controller: c,
+        keyboardType: TextInputType.number,
+        decoration: InputDecoration(
+          labelText: label,
+          prefixIcon: icon == null ? null : Icon(icon),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+        validator: required
+            ? (v) => v!.isEmpty ? "$label required" : null
+            : null,
       ),
-      validator: required
-          ? (v) => v!.isEmpty ? "$label required" : null
-          : null,
-    ),
-  );
-}
+    );
+  }
 
   //  loading skeleton
   Widget _buildShimmer(bool isDarkMode) {
@@ -610,5 +537,296 @@ Widget _numberField(
   // ✅ EMPTY
   Widget _buildEmpty() {
     return const Center(child: Text("No scholarships found"));
+  }
+}
+
+// ✅ SEPARATE WIDGET FOR FILTER BOTTOM SHEET
+class _FilterBottomSheet extends StatefulWidget {
+  final ScholarshipCrudProvider provider;
+  final ThemeData theme;
+  final bool isDarkMode;
+
+  const _FilterBottomSheet({
+    required this.provider,
+    required this.theme,
+    required this.isDarkMode,
+  });
+
+  @override
+  State<_FilterBottomSheet> createState() => _FilterBottomSheetState();
+}
+
+class _FilterBottomSheetState extends State<_FilterBottomSheet> {
+  late double filterIelts;
+  late double filterCgpa;
+  late DateTime filterDeadline;
+
+  @override
+  void initState() {
+    super.initState();
+    filterIelts = 0;
+    filterCgpa = 0;
+    filterDeadline = DateTime.now();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final scale = (size.width / 400).clamp(0.85, 1.2);
+
+    return Padding(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom + 16 * scale,
+      ),
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: widget.theme.cardColor,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20 * scale),
+            topRight: Radius.circular(20 * scale),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: widget.isDarkMode ? Colors.white12 : Colors.black12,
+              blurRadius: 8 * scale,
+              offset: Offset(0, -4 * scale),
+            ),
+          ],
+        ),
+        child: SingleChildScrollView(
+          padding: EdgeInsets.all(20 * scale),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Filter Scholarships',
+                style: widget.theme.textTheme.titleLarge?.copyWith(
+                  fontSize: (widget.theme.textTheme.titleLarge?.fontSize ?? 20) * scale,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              SizedBox(height: 24 * scale),
+
+              // Min IELTS Filter
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Min IELTS Score: ${filterIelts.toStringAsFixed(1)}',
+                          style: widget.theme.textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            fontSize: (widget.theme.textTheme.bodyMedium?.fontSize ?? 14) * scale,
+                          ),
+                        ),
+                      ),
+                      if (filterIelts == 0)
+                        Container(
+                          padding: EdgeInsets.symmetric(horizontal: 8 * scale, vertical: 4 * scale),
+                          decoration: BoxDecoration(
+                            color: Colors.red.shade100,
+                            borderRadius: BorderRadius.circular(6 * scale),
+                          ),
+                          child: Text(
+                            'Required',
+                            style: TextStyle(
+                              fontSize: 11 * scale,
+                              color: Colors.red.shade700,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  SizedBox(height: 8 * scale),
+                  Slider(
+                    value: filterIelts,
+                    min: 0,
+                    max: 9,
+                    divisions: 90,
+                    label: filterIelts.toStringAsFixed(1),
+                    activeColor: filterIelts == 0 ? Colors.red : Colors.blue,
+                    inactiveColor: Colors.grey.shade300,
+                    onChanged: (value) {
+                      setState(() {
+                        filterIelts = value;
+                      });
+                    },
+                  ),
+                ],
+              ),
+              SizedBox(height: 24 * scale),
+
+              // Min CGPA Filter
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Min CGPA: ${filterCgpa.toStringAsFixed(2)}',
+                          style: widget.theme.textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            fontSize: (widget.theme.textTheme.bodyMedium?.fontSize ?? 14) * scale,
+                          ),
+                        ),
+                      ),
+                      if (filterCgpa == 0)
+                        Container(
+                          padding: EdgeInsets.symmetric(horizontal: 8 * scale, vertical: 4 * scale),
+                          decoration: BoxDecoration(
+                            color: Colors.red.shade100,
+                            borderRadius: BorderRadius.circular(6 * scale),
+                          ),
+                          child: Text(
+                            'Required',
+                            style: TextStyle(
+                              fontSize: 11 * scale,
+                              color: Colors.red.shade700,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  SizedBox(height: 8 * scale),
+                  Slider(
+                    value: filterCgpa,
+                    min: 0,
+                    max: 4,
+                    divisions: 400,
+                    label: filterCgpa.toStringAsFixed(2),
+                    activeColor: filterCgpa == 0 ? Colors.red : Colors.green,
+                    inactiveColor: Colors.grey.shade300,
+                    onChanged: (value) {
+                      setState(() {
+                        filterCgpa = value;
+                      });
+                    },
+                  ),
+                ],
+              ),
+              SizedBox(height: 24 * scale),
+
+              // Deadline Filter
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'From Date: ${filterDeadline.day}/${filterDeadline.month}/${filterDeadline.year}',
+                    style: widget.theme.textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      fontSize: (widget.theme.textTheme.bodyMedium?.fontSize ?? 14) * scale,
+                    ),
+                  ),
+                  SizedBox(height: 12 * scale),
+                  OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(vertical: 12 * scale, horizontal: 14 * scale),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12 * scale),
+                      ),
+                    ),
+                    icon: Icon(Icons.calendar_today, size: 18 * scale),
+                    label: Text(
+                      'Pick Date',
+                      style: TextStyle(fontSize: 14 * scale),
+                    ),
+                    onPressed: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: filterDeadline,
+                        firstDate: DateTime(2020),
+                        lastDate: DateTime(2100),
+                      );
+                      if (picked != null) {
+                        setState(() {
+                          filterDeadline = picked;
+                        });
+                      }
+                    },
+                  ),
+                ],
+              ),
+
+              SizedBox(height: 36 * scale),
+
+              // ✅ ACTION BUTTONS
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        padding: EdgeInsets.symmetric(vertical: 12 * scale),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12 * scale),
+                        ),
+                      ),
+                      onPressed: () {
+                        // ✅ RESET FILTER
+                        widget.provider.clearSearchFilter();
+                      },
+                      child: Text(
+                        "Show All",
+                        style: TextStyle(fontSize: 14 * scale),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 12 * scale),
+                  Expanded(
+                    child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        padding: EdgeInsets.symmetric(vertical: 12 * scale),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12 * scale),
+                        ),
+                      ),
+                      onPressed: () => Navigator.pop(context),
+                      child: Text(
+                        "Cancel",
+                        style: TextStyle(fontSize: 14 * scale),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 12 * scale),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: filterIelts == 0 || filterCgpa == 0
+                          ? null
+                          : () {
+                              widget.provider.filter(
+                                filterIelts,
+                                filterCgpa,
+                                filterDeadline,
+                              );
+                              Navigator.pop(context);
+                            },
+                      style: ElevatedButton.styleFrom(
+                        padding: EdgeInsets.symmetric(vertical: 12 * scale),
+                        disabledBackgroundColor: Colors.grey.shade300,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12 * scale),
+                        ),
+                      ),
+                      child: Text(
+                        filterIelts == 0 || filterCgpa == 0
+                            ? "Set IELTS & CGPA"
+                            : "Apply",
+                        style: TextStyle(fontSize: 14 * scale),
+                      ),
+                    ),
+                  ),
+                ],
+              )
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

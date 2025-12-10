@@ -19,12 +19,15 @@ class _ScholarshipExcelUploadWidgetState extends State<ScholarshipExcelUploadWid
   late UploadingScholarshipFlowProvider _uploadingScholarshipFlowProvider;
   late ThemeData theme;
   late bool isDarkMode;
+  late double scale;
 
-  @override didChangeDependencies() {
+  @override
+  void didChangeDependencies() {
     super.didChangeDependencies();
     _uploadingScholarshipFlowProvider = Provider.of<UploadingScholarshipFlowProvider>(context, listen: true);
     theme = Theme.of(context);
     isDarkMode = theme.brightness == Brightness.dark;
+    scale = (MediaQuery.of(context).size.width / 400).clamp(0.85, 1.2);
   }
 
 
@@ -71,21 +74,21 @@ class _ScholarshipExcelUploadWidgetState extends State<ScholarshipExcelUploadWid
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(8.0),
+      padding: EdgeInsets.all(8.0 * scale),
       child: Column(
         children: [
           // Main Card
           Card(
             elevation: 3,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(16 * scale),
               side: BorderSide(
                 color: theme.dividerColor.withOpacity(0.2),
                 width: 1,
               ),
             ),
             child: Padding(
-              padding: const EdgeInsets.all(24.0),
+              padding: EdgeInsets.all(16.0 * scale),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -93,18 +96,18 @@ class _ScholarshipExcelUploadWidgetState extends State<ScholarshipExcelUploadWid
                   Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(12),
+                        padding: EdgeInsets.all(10 * scale),
                         decoration: BoxDecoration(
                           color: theme.primaryColor.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(12 * scale),
                         ),
                         child: Icon(
                           Icons.upload_file_rounded,
                           color: isDarkMode ? theme.primaryColorLight : theme.primaryColorDark,
-                          size: 28,
+                          size: 24 * scale,
                         ),
                       ),
-                      const SizedBox(width: 16),
+                      SizedBox(width: 12 * scale),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -113,13 +116,15 @@ class _ScholarshipExcelUploadWidgetState extends State<ScholarshipExcelUploadWid
                               'Upload Scholarships',
                               style: theme.textTheme.titleLarge?.copyWith(
                                 fontWeight: FontWeight.bold,
+                                fontSize: (theme.textTheme.titleLarge?.fontSize ?? 20) * scale,
                               ),
                             ),
-                            const SizedBox(height: 4),
+                            SizedBox(height: 4 * scale),
                             Text(
                               'Import scholarships from Excel file',
                               style: theme.textTheme.bodySmall?.copyWith(
                                 color: theme.colorScheme.onSurface.withOpacity(0.6),
+                                fontSize: (theme.textTheme.bodySmall?.fontSize ?? 12) * scale,
                               ),
                             ),
                           ],
@@ -128,11 +133,11 @@ class _ScholarshipExcelUploadWidgetState extends State<ScholarshipExcelUploadWid
                     ],
                   ),
                   
-                  const SizedBox(height: 24),
+                  SizedBox(height: 16 * scale),
                   
                   Divider(color: theme.dividerColor.withOpacity(0.2)),
                   
-                  const SizedBox(height: 24),
+                  SizedBox(height: 16 * scale),
 
                   // Instructions
                   _buildInstructionSection(
@@ -140,15 +145,15 @@ class _ScholarshipExcelUploadWidgetState extends State<ScholarshipExcelUploadWid
                     'Required Format',
                   ),
                   
-                  const SizedBox(height: 12),
+                  SizedBox(height: 8 * scale),
                   
                   // Column names in a clean box
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.all(16),
+                    padding: EdgeInsets.all(12 * scale),
                     decoration: BoxDecoration(
                       color: theme.primaryColor.withOpacity(0.05),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(12 * scale),
                       border: Border.all(
                         color: theme.primaryColor.withOpacity(0.2),
                         width: 1,
@@ -156,11 +161,16 @@ class _ScholarshipExcelUploadWidgetState extends State<ScholarshipExcelUploadWid
                     ),
                     child: Text(
                       'Title | university | country | type | coverage | minCGPA | minIelts | deadline | fieldsOfStudy',
-                      style: theme.textTheme.bodySmall,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        fontSize: (theme.textTheme.bodySmall?.fontSize ?? 11) * scale,
+                      ),
                       textAlign: TextAlign.center,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
 
+                  SizedBox(height: 12 * scale),
 
                   // Example section
                   _buildInstructionSection(
@@ -168,13 +178,14 @@ class _ScholarshipExcelUploadWidgetState extends State<ScholarshipExcelUploadWid
                     'Example Row'
                   ),
                   
+                  SizedBox(height: 8 * scale),
                   
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.all(16),
+                    padding: EdgeInsets.all(12 * scale),
                     decoration: BoxDecoration(
                       color: theme.cardColor,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(12 * scale),
                       border: Border.all(
                         color: theme.dividerColor.withOpacity(0.3),
                       ),
@@ -184,18 +195,21 @@ class _ScholarshipExcelUploadWidgetState extends State<ScholarshipExcelUploadWid
                       style: theme.textTheme.bodySmall?.copyWith(
                         fontFamily: 'monospace',
                         height: 1.5,
+                        fontSize: (theme.textTheme.bodySmall?.fontSize ?? 10) * scale,
                       ),
+                      maxLines: 4,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
 
-                  const SizedBox(height: 20),
+                  SizedBox(height: 12 * scale),
 
                   // Important notes
                   Container(
-                    padding: const EdgeInsets.all(12),
+                    padding: EdgeInsets.all(12 * scale),
                     decoration: BoxDecoration(
                       color: Colors.orange.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(12 * scale),
                       border: Border.all(
                         color: Colors.orange.withOpacity(0.3),
                       ),
@@ -206,9 +220,9 @@ class _ScholarshipExcelUploadWidgetState extends State<ScholarshipExcelUploadWid
                         Icon(
                           Icons.lightbulb_outline_rounded,
                           color: Colors.orange.shade700,
-                          size: 24,
+                          size: 20 * scale,
                         ),
-                        const SizedBox(width: 12),
+                        SizedBox(width: 10 * scale),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -218,15 +232,17 @@ class _ScholarshipExcelUploadWidgetState extends State<ScholarshipExcelUploadWid
                                 style: theme.textTheme.titleSmall?.copyWith(
                                   fontWeight: FontWeight.bold,
                                   color: Colors.orange.shade700,
+                                  fontSize: (theme.textTheme.titleSmall?.fontSize ?? 14) * scale,
                                 ),
                               ),
-                              const SizedBox(height: 8),
+                              SizedBox(height: 6 * scale),
                               Text(
                                 '• Use commas to separate multiple values\n'
                                 '• All columns are mandatory\n'
                                 '• Date format: YYYY-MM-DD',
                                 style: theme.textTheme.bodySmall?.copyWith(
                                   height: 1.6,
+                                  fontSize: (theme.textTheme.bodySmall?.fontSize ?? 12) * scale,
                                 ),
                               ),
                             ],
@@ -236,12 +252,12 @@ class _ScholarshipExcelUploadWidgetState extends State<ScholarshipExcelUploadWid
                     ),
                   ),
 
-                  const SizedBox(height: 24),
+                  SizedBox(height: 16 * scale),
 
                   // Upload Button
                   SizedBox(
                     width: double.infinity,
-                    height: 56,
+                    height: 48 * scale,
                     child: ElevatedButton.icon(
                       onPressed: _uploadingScholarshipFlowProvider.uploadStatus == Status.loading
                           ? null
@@ -251,26 +267,27 @@ class _ScholarshipExcelUploadWidgetState extends State<ScholarshipExcelUploadWid
                         foregroundColor: Colors.white,
                         elevation: 2,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(12 * scale),
                         ),
                         disabledBackgroundColor: theme.disabledColor,
+                        padding: EdgeInsets.symmetric(horizontal: 16 * scale, vertical: 12 * scale),
                       ),
                       icon: _uploadingScholarshipFlowProvider.uploadStatus == Status.loading
-                          ? const SizedBox(
-                              width: 24,
-                              height: 24,
+                          ? SizedBox(
+                              width: 20 * scale,
+                              height: 20 * scale,
                               child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                strokeWidth: 2 * scale,
+                                valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                               ),
                             )
-                          : const Icon(Icons.cloud_upload_rounded, size: 24),
+                          : Icon(Icons.cloud_upload_rounded, size: 20 * scale),
                       label: Text(
                         _uploadingScholarshipFlowProvider.uploadStatus == Status.loading
                             ? 'Uploading...'
                             : 'Choose Excel File',
-                        style: const TextStyle(
-                          fontSize: 16,
+                        style: TextStyle(
+                          fontSize: 15 * scale,
                           fontWeight: FontWeight.w600,
                           letterSpacing: 0.5,
                         ),
@@ -299,6 +316,7 @@ class _ScholarshipExcelUploadWidgetState extends State<ScholarshipExcelUploadWid
           title,
           style: theme.textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.bold,
+            fontSize: (theme.textTheme.titleMedium?.fontSize ?? 16) * scale,
           ),
         ),
         

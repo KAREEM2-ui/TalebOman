@@ -8,6 +8,7 @@ class ScholarshipCrudProvider extends ChangeNotifier {
   
   ScholarshipRepo _scholarshipRepo = ScholarshipRepo();
   List<Scholarship>? scholarships;
+  List<Scholarship>? filteredScholarships;
   Status status = Status.initial;
 
   Future<void> fetchAllScholarships() async
@@ -19,6 +20,7 @@ class ScholarshipCrudProvider extends ChangeNotifier {
     try
     {
         scholarships = await _scholarshipRepo.getAllScholarships();
+        filteredScholarships = scholarships!;
         status = Status.completed;
         notifyListeners();
 
@@ -52,7 +54,10 @@ class ScholarshipCrudProvider extends ChangeNotifier {
         final index = scholarships!.indexWhere((s) => s.id == scholarship.id);
         if (index != -1) {
           scholarships![index] = scholarship;
+          filteredScholarships![index] = scholarship;
         }
+
+
 
         status = Status.completed;
         notifyListeners();
@@ -66,6 +71,33 @@ class ScholarshipCrudProvider extends ChangeNotifier {
     }
   }
 
+
+
+  void applySearchFilter(String query) {
+    if(!query.isEmpty)
+    {
+      filteredScholarships = scholarships!.where((scholarship) => 
+        scholarship.Title.toLowerCase().contains(query.toLowerCase()) ||
+        (scholarship.country.toLowerCase().contains(query.toLowerCase()))
+      ).toList();
+      notifyListeners();
+    }
+  }
+
+  void clearSearchFilter() {
+    filteredScholarships = scholarships ?? [];
+  }
+
+  void filter(double ielts,double cgpa, DateTime deadline)
+  {
+    filteredScholarships = scholarships!.where((scholarship) => 
+      (scholarship.minIelts <= ielts) &&
+      (scholarship.minCGPA <= cgpa) &&
+      (scholarship.deadline.isAfter(deadline))
+    ).toList();
+
+    notifyListeners();
+  }
 
   Future<void> addScholarship(Scholarship scholarship) async
   {

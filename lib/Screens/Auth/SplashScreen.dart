@@ -142,7 +142,18 @@ class _SplashScreenState extends State<SplashScreen> {
                       AnimatedContainer(
                         duration: const Duration(milliseconds: 600),
                         padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 18),
-                        decoration: customCardDecoration(context, elevation: 10),
+                        decoration: customCardDecoration(context, elevation: 10).copyWith(
+                          color: theme.cardColor,
+                          boxShadow: [
+                            BoxShadow(
+                              color: theme.brightness == Brightness.dark
+                                  ? Colors.black.withValues(alpha: 0.3)
+                                  : Colors.grey.withValues(alpha: 0.2),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [

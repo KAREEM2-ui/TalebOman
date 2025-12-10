@@ -163,7 +163,18 @@ class UploadingScholarshipFlowProvider extends ChangeNotifier {
   }
   void removeAt(int idx)
   {
+    if(idx < 0 || idx >= _uploadeScholarships.length) return;
+
     _uploadeScholarships.removeAt(idx);
+
+    // if list becomes empty reset to first step
+    if(_uploadeScholarships.isEmpty)
+    {
+      reset();
+      return;
+    }
+    
+    // stay in the same step & update listeners
     notifyListeners();
   }
 

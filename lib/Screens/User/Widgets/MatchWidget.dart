@@ -12,9 +12,15 @@ class Match extends StatefulWidget {
 }
 
 class _MatchState extends State<Match> {
+
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+    final size = MediaQuery.of(context).size;
+    final scale = (size.width / 400).clamp(0.85, 1.2);
+    
     final deadlineRemaining = widget.match.deadline.difference(DateTime.now());
 
     final daysLeft = deadlineRemaining.isNegative
@@ -22,19 +28,19 @@ class _MatchState extends State<Match> {
         : (deadlineRemaining.inSeconds / Duration.secondsPerDay).ceil();
 
     return InkWell(
-      onTap: () => _showDetailsDialog(context, widget.match),
-      borderRadius: BorderRadius.circular(16),
-      highlightColor: const Color.fromARGB(255, 113, 185, 244),
+      onTap: () => _showDetailsDialog(context, widget.match, scale),
+      borderRadius: BorderRadius.circular(16 * scale),
+      highlightColor: theme.primaryColor.withValues(alpha: 0.2),
       child: Card(
         borderOnForeground: true,
-        elevation: 5,
-        shadowColor: const Color.fromARGB(66, 11, 25, 105),
-        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        elevation: 5 * scale,
+        shadowColor: isDarkMode ? const Color.fromARGB(115, 158, 153, 153) : Colors.grey.withValues(alpha: 0.3),
+        margin: EdgeInsets.symmetric(horizontal: 12 * scale, vertical: 8 * scale),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16 * scale),
         ),
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: EdgeInsets.all(16.0 * scale),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             // ───── TOP ROW: Title + University + Progress ─────
             Row(
@@ -52,15 +58,17 @@ class _MatchState extends State<Match> {
                         overflow: TextOverflow.ellipsis,
                         style: theme.textTheme.bodyLarge?.copyWith(
                           fontWeight: FontWeight.bold,
+                          fontSize: (theme.textTheme.bodyLarge?.fontSize ?? 16) * scale,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4 * scale),
                       Text(
                         widget.match.university,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onSurface.withOpacity(0.7),
+                          color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                          fontSize: (theme.textTheme.bodyMedium?.fontSize ?? 14) * scale,
                         ),
                       ),
                     ],
@@ -70,9 +78,9 @@ class _MatchState extends State<Match> {
                 // Divider
                 Container(
                   width: 1,
-                  height: 70,
-                  margin: const EdgeInsets.symmetric(horizontal: 16),
-                  color: Colors.grey[300],
+                  height: 70 * scale,
+                  margin: EdgeInsets.symmetric(horizontal: 16 * scale),
+                  color: isDarkMode ? Colors.white12 : Colors.grey[300],
                 ),
 
                 // Right side: Progress circle + days left
@@ -81,21 +89,28 @@ class _MatchState extends State<Match> {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       SizedBox(
-                        width: 90,
-                        height: 90,
+                        width: 90 * scale,
+                        height: 90 * scale,
                         child: CustomPaint(
-                          size: const Size(90, 90),
+                          size: Size(90 * scale, 90 * scale),
                           painter: CircleProgressPainter(percentage: widget.match.percentageScore!),
                           child: Center(
-                            child: Text("${widget.match.percentageScore!.toStringAsFixed(1)} %"),
+                            child: Text(
+                              "${widget.match.percentageScore!.toStringAsFixed(1)} %",
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                fontSize: (theme.textTheme.bodySmall?.fontSize ?? 12) * scale,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8 * scale),
                       Text(
                         "$daysLeft Days Left",
                         style: theme.textTheme.bodyMedium?.copyWith(
-                          color: daysLeft <= 5 ? Colors.red : Colors.grey[700],
+                          color: daysLeft <= 5 ? Colors.red : (isDarkMode ? Colors.grey[400] : Colors.grey[700]),
+                          fontSize: (theme.textTheme.bodyMedium?.fontSize ?? 14) * scale,
                         ),
                       ),
                     ],
@@ -104,22 +119,27 @@ class _MatchState extends State<Match> {
               ],
             ),
 
-            const SizedBox(height: 12),
+            SizedBox(height: 12 * scale),
 
             // ───── LOCATION + DEADLINE ─────
             Wrap(
-              spacing: 12,
-              runSpacing: 4,
+              spacing: 12 * scale,
+              runSpacing: 4 * scale,
               children: [
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.location_on, size: 16, color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
-                    const SizedBox(width: 4),
+                    Icon(
+                      Icons.location_on,
+                      size: 16 * scale,
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                    ),
+                    SizedBox(width: 4 * scale),
                     Text(
                       widget.match.country,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                        fontSize: (theme.textTheme.bodySmall?.fontSize ?? 12) * scale,
                       ),
                     ),
                   ],
@@ -127,12 +147,17 @@ class _MatchState extends State<Match> {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.date_range, size: 16, color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
-                    const SizedBox(width: 4),
+                    Icon(
+                      Icons.date_range,
+                      size: 16 * scale,
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                    ),
+                    SizedBox(width: 4 * scale),
                     Text(
                       "$daysLeft Days Left",
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                        fontSize: (theme.textTheme.bodySmall?.fontSize ?? 12) * scale,
                       ),
                     ),
                   ],
@@ -140,17 +165,18 @@ class _MatchState extends State<Match> {
               ],
             ),
 
-            const SizedBox(height: 12),
+            SizedBox(height: 12 * scale),
 
             // hint
             Padding(
-              padding: const EdgeInsets.only(top: 10.0),
+              padding: EdgeInsets.only(top: 10.0 * scale),
               child: Center(
                 child: Text(
                   "Tap to view more details",
                   textAlign: TextAlign.center,
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                    fontSize: (theme.textTheme.bodyMedium?.fontSize ?? 14) * scale,
                   ),
                 ),
               ),
@@ -161,23 +187,35 @@ class _MatchState extends State<Match> {
     );
   }
 
-  void _showDetailsDialog(BuildContext context, Scholarship match) {
+  void _showDetailsDialog(BuildContext context, Scholarship match, double scale) {
+    final theme = Theme.of(context);
     showDialog(
       context: context,
       builder: (ctx) {
         final maxHeight = MediaQuery.of(ctx).size.height * 0.75;
         return AlertDialog(
-          contentPadding: const EdgeInsets.fromLTRB(18, 18, 18, 0),
+          contentPadding: EdgeInsets.fromLTRB(18 * scale, 18 * scale, 18 * scale, 0),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16 * scale),
+          ),
           content: ConstrainedBox(
-            constraints: BoxConstraints(maxHeight: maxHeight, maxWidth: 520),
+            constraints: BoxConstraints(maxHeight: maxHeight, maxWidth: 520 * scale),
             child: SingleChildScrollView(
-              child: _buildMatchDetails(ctx, match),
+              child: _buildMatchDetails(ctx, match, scale),
             ),
           ),
           actions: [
             TextButton(
+              style: TextButton.styleFrom(
+                padding: EdgeInsets.symmetric(horizontal: 16 * scale, vertical: 8 * scale),
+              ),
               onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text('Close'),
+              child: Text(
+                'Close',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontSize: (theme.textTheme.bodyMedium?.fontSize ?? 14) * scale,
+                ),
+              ),
             ),
           ],
         );
@@ -186,47 +224,58 @@ class _MatchState extends State<Match> {
   }
 }
 
-Widget _buildMatchDetails(BuildContext context, Scholarship match) {
+Widget _buildMatchDetails(BuildContext context, Scholarship match, double scale) {
   final theme = Theme.of(context);
+  final isDarkMode = theme.brightness == Brightness.dark;
 
   return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
     Wrap(
-      spacing: 6,
-      runSpacing: 6,
+      spacing: 6 * scale,
+      runSpacing: 6 * scale,
       children: (match.fieldsOfStudy ?? <String>[]).map((field) {
         return Chip(
           label: Text(
             field,
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+              fontSize: (theme.textTheme.bodySmall?.fontSize ?? 12) * scale,
             ),
           ),
-          backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.1),
+          backgroundColor: theme.primaryColor.withValues(alpha: 0.1),
+          padding: EdgeInsets.symmetric(horizontal: 8 * scale, vertical: 4 * scale),
         );
       }).toList(),
     ),
 
-    const SizedBox(height: 16),
+    SizedBox(height: 16 * scale),
 
     // ───── REQUIREMENTS ─────
     Text(
       "Requirements:",
-      style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+      style: theme.textTheme.bodyMedium?.copyWith(
+        fontWeight: FontWeight.bold,
+        fontSize: (theme.textTheme.bodyMedium?.fontSize ?? 14) * scale,
+      ),
     ),
-    const SizedBox(height: 8),
+    SizedBox(height: 8 * scale),
     Wrap(
-      spacing: 16,
-      runSpacing: 4,
+      spacing: 16 * scale,
+      runSpacing: 4 * scale,
       children: [
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.school, size: 16, color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
-            const SizedBox(width: 4),
+            Icon(
+              Icons.school,
+              size: 16 * scale,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+            ),
+            SizedBox(width: 4 * scale),
             Text(
               "CGPA ≥ ${match.minCGPA}",
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                fontSize: (theme.textTheme.bodySmall?.fontSize ?? 12) * scale,
               ),
             ),
           ],
@@ -234,12 +283,17 @@ Widget _buildMatchDetails(BuildContext context, Scholarship match) {
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.language, size: 16, color: theme.colorScheme.onSurface),
-            const SizedBox(width: 4),
+            Icon(
+              Icons.language,
+              size: 16 * scale,
+              color: theme.colorScheme.onSurface,
+            ),
+            SizedBox(width: 4 * scale),
             Text(
               "IELTS ≥ ${match.minIelts}",
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurface,
+                fontSize: (theme.textTheme.bodySmall?.fontSize ?? 12) * scale,
               ),
             ),
           ],
@@ -247,22 +301,27 @@ Widget _buildMatchDetails(BuildContext context, Scholarship match) {
       ],
     ),
 
-    const SizedBox(height: 16),
+    SizedBox(height: 16 * scale),
 
     // ───── DEADLINE ─────
     Row(
       children: [
-        Icon(Icons.calendar_today, size: 16, color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
-        const SizedBox(width: 4),
+        Icon(
+          Icons.calendar_today,
+          size: 16 * scale,
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+        ),
+        SizedBox(width: 4 * scale),
         Text(
           "Deadline: ${match.deadline.day}/${match.deadline.month}/${match.deadline.year}",
           style: theme.textTheme.bodySmall?.copyWith(
             color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+            fontSize: (theme.textTheme.bodySmall?.fontSize ?? 12) * scale,
           ),
         ),
       ],
     ),
-    const SizedBox(height: 12),
+    SizedBox(height: 12 * scale),
   ]);
 }
 

@@ -46,7 +46,7 @@ class _LandingscreenState extends State<Landingscreen>
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Image.asset("assets/images/lan10.jpg",
+            Image.asset("assets/images/app_icon.jpg",
             width: MediaQuery.of(context).size.width * 0.5,
             height: MediaQuery.of(context).size.height * 0.3,
             fit: BoxFit.cover,

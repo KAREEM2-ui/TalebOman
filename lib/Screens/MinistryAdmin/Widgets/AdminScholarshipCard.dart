@@ -1,4 +1,5 @@
-// admin_scholarship_card.dart
+
+
 import 'package:flutter/material.dart';
 import 'package:projectapp/Models/Scholarship.dart';
 
@@ -6,6 +7,7 @@ class AdminScholarshipCard extends StatelessWidget {
   final Scholarship scholarship;
   final VoidCallback onEdit;
   final VoidCallback? onTap;
+  final VoidCallback? onDelete;
   final bool isDarkMode;
 
   const AdminScholarshipCard({
@@ -14,6 +16,7 @@ class AdminScholarshipCard extends StatelessWidget {
     required this.onEdit,
     this.onTap,
     required this.isDarkMode,
+    this.onDelete,
   });
 
   @override
@@ -38,8 +41,9 @@ class AdminScholarshipCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Title + Edit Button Row
+              // Title + Edit/Delete Buttons Row
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
                     child: Text(
@@ -49,14 +53,42 @@ class AdminScholarshipCard extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                         color: isDarkMode ? Colors.white : Colors.black87,
                       ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  IconButton(
-                    icon: Icon(Icons.edit_outlined,
-                        color: Theme.of(context).colorScheme.primary),
-                    tooltip: 'Edit',
-                    onPressed: onEdit,
+                  const SizedBox(width: 8),
+                  // Edit Button
+                  SizedBox(
+                    width: 40,
+                    height: 40,
+                    child: IconButton(
+                      padding: EdgeInsets.zero,
+                      icon: Icon(
+                        Icons.edit_outlined,
+                        color: Theme.of(context).colorScheme.primary,
+                        size: 20,
+                      ),
+                      tooltip: 'Edit',
+                      onPressed: onEdit,
+                    ),
                   ),
+                  // Delete Button
+                  if (onDelete != null)
+                    SizedBox(
+                      width: 40,
+                      height: 40,
+                      child: IconButton(
+                        padding: EdgeInsets.zero,
+                        icon: Icon(
+                          Icons.delete_outline,
+                          color: Colors.red.shade400,
+                          size: 20,
+                        ),
+                        tooltip: 'Delete',
+                        onPressed: onDelete,
+                      ),
+                    ),
                 ],
               ),
               const SizedBox(height: 10),

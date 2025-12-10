@@ -130,4 +130,23 @@ class AuthenticationProvider extends ChangeNotifier
     loginStatus = Status.initial;
     notifyListeners();
   }
+
+  Future<void> sendPasswordResetEmail(String email) async {
+    try {
+      await _authRepo.sendPasswordResetEmail(email);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> verifyPassword(String code) async {
+    try {
+      bool isValid = await _authRepo.verifyPasswordResetCode(code);
+      if (!isValid) {
+        throw Exception('Invalid or expired password reset code.');
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
 }

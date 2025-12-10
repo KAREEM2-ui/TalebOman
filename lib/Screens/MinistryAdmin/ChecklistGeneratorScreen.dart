@@ -5,7 +5,6 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import '../../Repositories/ScholarshipRepo.dart';
-import '../../Models/Scholarship.dart';
 
 class ChecklistGeneratorScreen extends StatefulWidget {
   const ChecklistGeneratorScreen({super.key});
@@ -52,89 +51,111 @@ class _ChecklistGeneratorScreenState extends State<ChecklistGeneratorScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final size = MediaQuery.of(context).size;
+    final scale = (size.width / 400).clamp(0.85, 1.2);
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Scholarship List Generator',
-              style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'Select a country to generate a PDF with all available scholarships:',
-              style: theme.textTheme.bodyMedium,
-            ),
-            const SizedBox(height: 12),
-            DropdownButtonFormField<String>(
-              value: selectedCountry,
-              decoration: InputDecoration(
-                labelText: 'Country',
-                labelStyle: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.7)),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: theme.dividerColor),
+      body: Center(
+        child: SingleChildScrollView(
+         padding: EdgeInsets.all(16 * scale),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Scholarship List Generator',
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  fontSize: (theme.textTheme.headlineSmall?.fontSize ?? 20) * scale,
                 ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: theme.dividerColor),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: theme.primaryColor, width: 2),
-                ),
-                prefixIcon: Icon(Icons.public, color: theme.primaryColor),
-                filled: true,
-                fillColor: theme.cardColor,
               ),
-              dropdownColor: theme.cardColor,
-              style: theme.textTheme.bodyMedium,
-              items: countries
-                  .map((c) => DropdownMenuItem(
-                        value: c,
-                        child: Text(c, style: theme.textTheme.bodyMedium),
-                      ))
-                  .toList(),
-              onChanged: (v) => setState(() => selectedCountry = v),
-              validator: (v) => v == null ? 'Please select a country' : null,
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: theme.primaryColor,
-                  foregroundColor: Colors.white,
-                  elevation: 2,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+              SizedBox(height: 20 * scale),
+              Text(
+                'Select a country to generate a PDF with all available scholarships:',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontSize: (theme.textTheme.bodyMedium?.fontSize ?? 14) * scale,
+                ),
+              ),
+              SizedBox(height: 12 * scale),
+              DropdownButtonFormField<String>(
+                value: selectedCountry,
+                decoration: InputDecoration(
+                  labelText: 'Country',
+                  labelStyle: TextStyle(
+                    color: theme.colorScheme.onSurface.withOpacity(0.7),
+                    fontSize: 14 * scale,
                   ),
-                  disabledBackgroundColor: theme.disabledColor,
+                  border: OutlineInputBorder(
+                   borderRadius: BorderRadius.circular(8 * scale),
+                    borderSide: BorderSide(color: theme.dividerColor),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                   borderRadius: BorderRadius.circular(8 * scale),
+                    borderSide: BorderSide(color: theme.dividerColor),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                   borderRadius: BorderRadius.circular(8 * scale),
+                   borderSide: BorderSide(color: theme.primaryColor, width: 2 * scale),
+                  ),
+                 prefixIcon: Icon(Icons.public, color: theme.colorScheme.primary, size: 22 * scale),
+                  filled: true,
+                  fillColor: theme.cardColor,
+                 contentPadding: EdgeInsets.symmetric(horizontal: 12 * scale, vertical: 14 * scale),
                 ),
-                icon: _isLoading
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                        ),
-                      )
-                    : const Icon(Icons.picture_as_pdf),
-                label: Text(
-                  _isLoading ? 'Generating...' : 'Generate Scholarship List',
-                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                dropdownColor: theme.cardColor,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontSize: (theme.textTheme.bodyMedium?.fontSize ?? 14) * scale,
                 ),
-                onPressed: (selectedCountry == null || _isLoading) ? null : () => _generatePDF(),
+                icon: Icon(Icons.arrow_drop_down, size: 24 * scale),
+                items: countries
+                    .map((c) => DropdownMenuItem(
+                          value: c,
+                          child: Text(
+                            c,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              fontSize: (theme.textTheme.bodyMedium?.fontSize ?? 14) * scale,
+                            ),
+                          ),
+                        ))
+                    .toList(),
+                onChanged: (v) => setState(() => selectedCountry = v),
+                validator: (v) => v == null ? 'Please select a country' : null,
               ),
-            ),
-          ],
+              SizedBox(height: 20 * scale),
+              SizedBox(
+                width: double.infinity,
+                height: 48 * scale,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: theme.primaryColor,
+                    foregroundColor: Colors.white,
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                     borderRadius: BorderRadius.circular(8 * scale),
+                    ),
+                    disabledBackgroundColor: theme.disabledColor,
+                   padding: EdgeInsets.symmetric(horizontal: 16 * scale, vertical: 12 * scale),
+                  ),
+                  icon: _isLoading
+                      ? SizedBox(
+                          width: 20 * scale,
+                          height: 20 * scale,
+                          child: CircularProgressIndicator(
+                           strokeWidth: 2 * scale,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        )
+                      : Icon(Icons.picture_as_pdf, size: 20 * scale),
+                  label: Text(
+                    _isLoading ? 'Generating...' : 'Generate Scholarship List',
+                   style: TextStyle(fontSize: 15 * scale, fontWeight: FontWeight.w600),
+                  ),
+                  onPressed: (selectedCountry == null || _isLoading) ? null : () => _generatePDF(),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
